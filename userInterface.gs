@@ -1,8 +1,6 @@
 /**
- * *********************** UserInterface.gs
- * ***************************************
+ * When spreadsheet is opened this function adds menu items
  */
-//When spreadsheet is opened this function adds menu items
 function onOpen() {
   getSettingsFromSheet_();
   var menuTitle;
@@ -81,6 +79,11 @@ function onOpen() {
   
 }
 
+/**
+ * Function to get the menu title based on the version number,
+ * release number etc
+ * @returns {[[Type]]} [[Description]]
+ */
 function getMenuTitle_() {
   var versionNumber = getVersionNumber_();
   var versionRelease = getReleaseNumber_();
@@ -92,6 +95,10 @@ function getMenuTitle_() {
   return menuTitle;
 }
 
+/**
+ * Function to set up the Engineering menu consisting
+ * of set up options
+ */
 function enableEngineering_() {
   var engineering;
   var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -121,6 +128,10 @@ function enableEngineering_() {
                         'WARN');
 }
 
+/**
+ * Function to set up the Pro menu for use by user who
+ * knows what he/she is doing and hence considered a Pro
+ */
 function proMenu_() {
 	var ss = SpreadsheetApp.getActiveSpreadsheet();
 	var proMenu = [
@@ -143,6 +154,9 @@ function proMenu_() {
 			 'WARN');
 }
 
+/**
+ * Function to change Version numbers, release numbers and dates etc
+ */
 function versionReleaseDistroMenu_() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var versionReleaseDistroMenu = [

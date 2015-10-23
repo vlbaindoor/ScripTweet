@@ -17,8 +17,9 @@ var GET_TIMEZONE_CELL_INDEX = "B2";
 var SET_LOCALE_CELL_INDEX = "C2";
 var SET_TIMEZONE_CELL_INDEX = "D2";
 
-
-//When spreadsheet is opened this function adds menu items during Testing
+/**
+ * When spreadsheet is opened this function adds menu items during Testing
+ */
 function localeTimeZoneMenu_() {
   var menuTitle;
   var menu;
@@ -37,12 +38,23 @@ function localeTimeZoneMenu_() {
 
 }
 
+/**
+ * Function to set the timezone and locale settins for the spreadsheet
+ * @param {String} newLocale 
+ * @param {String} newTimeZone
+ */
 function setTimeZoneLocale(newLocale, newTimeZone) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   ss.setSpreadsheetLocale(newLocale);
   ss.setSpreadsheetTimeZone(newTimeZone); 
 }
 
+/**
+ * Function to get the present locale and timezone settings
+ * for the spreadsheet
+ * @returns {Object} present Locale and timezones are
+ *                   returned as an object
+ */
 function getTimeZoneLocale() {
   var presentLocale;
   var presentTimeZone;
@@ -52,6 +64,9 @@ function getTimeZoneLocale() {
   return { presentLocale: presentLocale, presentTimeZone: presentTimeZone};
 }
 
+/**
+ * Function to test the functionality
+ */
 function getShowTimeZoneLocale_() {
   // Get the present values
   
@@ -72,6 +87,9 @@ function getShowTimeZoneLocale_() {
   showTimeZoneCell.setValue(presentTimeZone);
 }
 
+/**
+ * Function to test the functionality
+ */
 function setShowTimeZoneLocale_() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var timeZoneLocaleSheet = ss.getSheetByName(TimeZoneLocaleSheet);

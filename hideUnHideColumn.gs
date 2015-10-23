@@ -1,3 +1,8 @@
+/**
+ * Function to Hide a column
+ * @param {String} columnName string which contains 
+ *                            the text used in the column
+ */
 function hideOneColumn_(columnName) {
     var ss = SpreadsheetApp.getActive();
     var sheet = ss.getSheetByName(MessagesForTweetingSheet);
@@ -9,6 +14,11 @@ function hideOneColumn_(columnName) {
     sheet.hideColumn(range);
 }
 
+/**
+ * Function to unHide or rather show a column
+ * @param {String} columnName string which contains 
+ *                            the text used in the column
+ */
 function unHideOneColumn_(columnName) {
     var ss = SpreadsheetApp.getActive();
     var sheet = ss.getSheetByName(MessagesForTweetingSheet);

@@ -1,3 +1,7 @@
+/**
+ * Function to check user triggers and log them using
+ * Logger
+ */
 function logTriggers() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var triggers = ScriptApp.getUserTriggers(ss);

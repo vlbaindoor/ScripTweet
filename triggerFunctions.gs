@@ -1,6 +1,5 @@
 /**
- * *********************** FunctionsToTrigger.gs
- * ***************************************
+ * Function to clear the user settable triggers for the Script
  */
 function clearOurTrigger() {
   var triggers = ScriptApp.getProjectTriggers();
@@ -12,6 +11,11 @@ function clearOurTrigger() {
   updateTriggerStatusDisplay_();
 }
 
+/**
+ * Function to check if any user settable triggers are set
+ * @returns {Boolean} true if clock based triggers are set
+ *                    otherwise it returns false
+ */
 function checkTrigger_() {
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -30,6 +34,10 @@ function checkTrigger_() {
    }
 }
 
+/**
+ * function to set our triggers based on the value from the 
+ * settings sheet on spreadsheet
+ */
 function setOurTrigger() {
   clearOurTrigger();
   var settings = SpreadsheetApp.getActiveSpreadsheet()

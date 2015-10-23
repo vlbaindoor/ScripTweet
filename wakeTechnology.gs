@@ -236,8 +236,10 @@ function removeScriptAuthorisationProperty() {
   scriptProperties.deleteProperty('scriptAuthorised');
 }
 
-// This function simply forces the Google's own 'authorise' prompt to appear
-// and it stores a dummy property
+/**
+ * This function simply forces the Google's own 'authorise' prompt 
+ * to appear and it stores a dummy property
+ */
 function authorise_() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var scriptProperties = PropertiesService.getScriptProperties();

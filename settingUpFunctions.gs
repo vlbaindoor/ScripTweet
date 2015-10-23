@@ -26,6 +26,10 @@
  * 
  */
 
+/**
+ * This records the Keys and Secrets that are stored as Script Properties
+ * back into the spreadsheet itself so that user can see them.
+ */
 function setupKeysSecretsFromPropertiesToSheet_() {
 	// Let us get the settings from the Property store
 	var params = getKeySecretsFromProperties();
@@ -34,11 +38,14 @@ function setupKeysSecretsFromPropertiesToSheet_() {
 			            params.accessToken, params.acessTokenSecret);
 }
 
-//This function creates a Template from file using the Html Service
-//which loads the HTML content from the 'KeySecrets.html' file which also
-//executes functions within that html file.
-//Then the validate function within that KeySecrets.html is called
-//which ends up calling setKeySecrets function
+
+/**
+ * This function creates a Template from file using the Html Service
+ * which loads the HTML content from the 'KeySecrets.html' file which also
+ * executes functions within that html file.
+ * Then the validate function within that KeySecrets.html is called
+ * which ends up calling setKeySecrets function
+ */
 function getKeySecretsFromUser_() {
   var html = HtmlService.createTemplateFromFile('KeysSecrets')
                .evaluate().setWidth(1000).setHeight(540)
@@ -48,7 +55,12 @@ function getKeySecretsFromUser_() {
   ss.show(html);
 }
 
-/* The function validate calls this function from KeySecrets.html */
+/**
+ * The function validate calls this function from KeySecrets.html
+ * @param   {Object} params an array containing multiple objects
+ * @returns {String} for showing to the user the result
+ *                   of setting Key Secrets
+ */
 function setKeySecrets(params) {
 	try {
 		doProperty_("ProjectId", params.projectId);
@@ -67,13 +79,19 @@ function setKeySecrets(params) {
 	}
 }
 
-/* Temporary function to use existing data to put onto project properties */
+/**
+ * Temporary function to use existing data to put onto project properties
+ */
 function getAndSetKeySecrets() {
 	var params = getPresentKeySecrets_();
 	setKeySecrets(params);
 }
 
-/* Temporary function */
+/**
+ * Function to get the present Keys and Secrets from the sheet
+ * and return them as on object
+ * @returns {Object} the object consists of Keys and Secrets
+ */
 function getPresentKeySecrets_() {
 	getSettingsFromSheet_();
 	var projectId = getScriptProjectKey();
@@ -87,7 +105,12 @@ function getPresentKeySecrets_() {
 	};
 }
 
-//This function is called from the HTML file KeySecrets.html
+/**
+ * This function is called from the HTML file KeySecrets.html.
+ * This function is used to get the values stored for Keys and
+ * Secrets as Script Properties and returns them as an objet
+ * @returns {Object} Keys and Secrets as Script Properties
+ */
 function getKeySecretsFromProperties() {
 	var projectId = getScriptProjectKey();
 	return {

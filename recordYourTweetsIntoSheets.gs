@@ -3,6 +3,9 @@
 
 var fields = {'in_reply_to_screen_name':true,'created_at':true,'text':true};
 
+/**
+ * Function to fetch your tweets and save them.
+ */
 function saveYourTweets_() {
   // Setup OAuthServiceConfig
   var oAuthConfig = UrlFetchApp.addOAuthService("twitter");
@@ -45,6 +48,9 @@ function saveYourTweets_() {
   }
 }
 
+/**
+ * Function to pull your tweets from the user's time line
+ */
 function pullYourTweets() {
   var service = getTwitterService_();
   if (service.hasAccess()) {
@@ -61,6 +67,10 @@ function pullYourTweets() {
   }
 }
 
+/**
+ * Function written to test whether the rest of these things work!
+ * @returns {[[Type]]} [[Description]]
+ */
 function TOTESTgetTwitterService_() {
   var projectKey = getScriptProjectKey();
   var service = OAuth1.createService('twitter');
@@ -75,6 +85,11 @@ function TOTESTgetTwitterService_() {
   return service;
 }
 
+/**
+ * Function written to test whether the rest of these things work!
+ * @param   {[[Type]]} request [[Description]]
+ * @returns {[[Type]]} [[Description]]
+ */
 function TOTESTauthCallback_(request) {
   var service = getTwitterService();
   var isAuthorized = service.handleCallback(request);
@@ -85,6 +100,11 @@ function TOTESTauthCallback_(request) {
   }
 }
 
+/**
+ * Function to record the tweets into spreadsheet
+ * @param {String} tweetMsg the tweets pulled 
+ *                          from user's time line
+ */
 function recordInSheet_(tweetMsg) {  
   var ss = SpreadsheetApp.getActive();
   var sheet = ss.getSheetByName(TweetedMessagesSheet); 

@@ -1,0 +1,54 @@
+<link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons.css">
+
+<!-- Use a templated HTML printing scriptlet to import common stylesheet. -->
+<?!= HtmlService.createHtmlOutputFromFile('Stylesheet').getContent(); ?>
+
+<script>
+
+function closeWindow() {
+  google.script.host.close();
+}
+
+function showError(error) {
+  document.getElementById("error").innerHTML = error;
+}
+
+function success(e) {
+  showError(e);
+}
+
+function showTemplate(versionName) {
+  document.getElementById("VersionName").value = versionName;
+  document.getElementById("loading").style.display = "none";
+  document.getElementById("form").style.display = "block";
+  return;
+}
+
+</script>
+
+<div id="loading">Loading Twitter form..</div>
+
+<form id="form" style="display:none">
+  <div class="form-group block">
+  <p>The <a href="http://www.wake-technology.com">ScripTweet</a> app lets you send Tweets from a Google Spreadsheet.</p>
+  <p>This is a Google Spreadsheet Apps Script which allows you to add Tweet messages in its rows
+   and send out those messages periodically depending on your choice of time interval.
+   When there are more than one message to be tweeted, there would be a delay between each Tweet.</p>
+   <p>This adds a custom menu to the top of the Spreadsheet and encourages users to use options from
+   the menu. Although it is possible to edit the Spreadsheet cells directly it is not recommended.
+   Some cells should not be actually manually edited as it may affect the performance of this tool.</p>
+   <p>Please note that this is still a Work In Progress</p>
+   <p>Version number :
+   <textarea rows="1" id="VersionName" readonly style="width:100%;font-size:1.15em;font-family: courier"
+    placeholder="Version number shows here."></textarea></p>
+</div>
+<div class="block">
+  <a class="button blue" href="mailto:support@wake-technology.com" style="width:120px;">Send Email</a>
+  <a class="button blue" href="https://twitter.com/waketechintegra" style="width:220px;margin-right:10px">Tweet @WakeTechIntegra</a>  
+  <input class="red" type="button" value="Close" onclick="google.script.host.close()" />
+</div>
+</form>
+
+<script>
+  google.script.run.withSuccessHandler(showTemplate).getVersionNameNumber();  
+</script>

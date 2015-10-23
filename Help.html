@@ -1,0 +1,131 @@
+<link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons.css">
+
+<!-- Use a templated HTML printing scriptlet to import common stylesheet. -->
+<?!= HtmlService.createHtmlOutputFromFile('Stylesheet').getContent(); ?>
+
+<script>
+function closeWindow() {
+  google.script.host.close();
+}
+
+function showError(error) {
+  document.getElementById("error").innerHTML = error;
+}
+
+function success(e) {
+  showError(e);
+}
+
+function showTemplate(params) {
+  document.getElementById("VersionName").value = params.versionName;
+  document.getElementById("sharingURL").value = params.sharingURL;
+  document.getElementById("loading").style.display = "none";
+  document.getElementById("form").style.display = "block";
+  return;
+}
+</script>
+
+<div id="loading">Loading Twitter form..</div>
+
+<form id="form" style="display:none">
+  <div class="form-group block">
+  <p>The <a href="http://www.wake-technology.com">ScripTweet</a> app lets you send Tweets from a Google Spreadsheet.</p>
+  <p>This is a Google Spreadsheet Apps Script which allows you to add Tweet messages in its rows
+   and send out those messages periodically depending on your choice of time interval.
+   When there are more than one message to be tweeted, there would be a delay between each Tweet.</p>
+   <p>This adds a custom menu to the top of the Spreadsheet and encourages users to use options from
+   the menu. Although it is possible to edit the Spreadsheet cells directly it is not recommended.
+   Some cells should not be actually manually edited as it may affect the performance of this tool.</p>
+   <p>Please note that this is still a Work In Progress</p>
+   <p>Version number :
+   <textarea rows="1" id="VersionName" readonly style="width:100%;font-size:1.15em;font-family: courier"
+    placeholder="Version number shows here."></textarea></p>
+</div>
+<div class="form-group block">
+<h2>WARNING</h2>
+<p>Do not put symbols in the text message<br>This includes the commonly used symbol for 'and' which is "&"<br>
+<b>Do NOT use it</b><br><br>If you do then you may have unexplainable behaviour!<br>
+Use the "@" symbol <b>only</b> to refer to someone's Twitter Handle and not for anything else.</p>
+<h2>Here are general Oprating Instructions - but these are valid only after the
+    initial set up is succesfully completed.</h2>
+<ol>
+<li><b>ALLWAYS use the Blue "1. Add Message To TWEET" button</b>
+    to add new messages for periodic tweeting</li>
+<li>You can use this button repeatedly to add more messages.</li>
+<li>After you have added message or messages for Tweeting, you need to click on the
+    <b>"2. Prepare TWEET"</b> button to assign a template, save the template so that the tool can
+    create the actual messages to be Tweeted. These messages get saved on the same
+    SpreadSheet under a column called "Tweet". 
+    <b>Please do not directly edit the entries in this column</b></li>
+<li>Once you are happy with the entries you see under the "Tweet" column, you can go ahead
+    and click on the <b>"3. TWEET Away"</b> button.</li>
+<li>Every humanly possible effort is made to guide you in using this tool
+    throughout but these are guidelines</li>
+<li>The "TWEET Regularly" button is used to set up a timer based trigger which runs on Google's Servers.
+    This trigger would go through the rows in this SpreadSheet and Tweet them at regular intervals.</li>
+<li>You can use the button named "STOP Regular Tweets" to remove the timer based trigger. You may have to
+    use this button to stop the existing timer trigger and start a new one if in case you changed the
+    "Tweet Interval in Minutes" from the "Settings" Sheet - which is a sub sheet of this Spread Sheet.</li>
+</ol>
+<h2>NOTE</h2>
+<p>The Google URL Shortener API is to be enabled by going into Resources and Advanced Google Services,
+scroll down, find Google URL Shortener API and Enable it.<br>
+You may also need to go into Google Developers Console and enable them.</p>
+
+<h2>Enabling Twitter Connectivity, Authentication etc </h2>
+<p>Go to Twitter’s developer dashboard by browsing to<br>
+   <a href="https://apps.twitter.com/">https://apps.twitter.com/</a><br>
+   create a new app and copy the Consumer Secret and Key.<br>
+   These will have to be copied from Twitter Website and copied onto the corresponding place in
+   the "Settings" Sheet of this Spreadsheet.</p><p></p>
+   <p>To restart call rewokeTwitterService, then call the authTwitter_</p>
+
+<h2>Libraries etc</h2>
+<p>Under Resouces -> Libraries -> Find a Library copy paste the following string to search<br><br>
+   <b>Mb2Vpd5nfD3Pz-_a-39Q4VfxhMjh3Sh48</b><br>
+   It should find <b>OAuth1</b> library - this needs to be added to resources used by the script.<br>
+   You may have to select a specific version of the libarary after you you done the previous step.</p>
+</div>
+<h2>How to Share this Tool?</h2>
+<p>You are free to share this tool with anyone you wish to share it with.<br>
+<i><b>But Wake Technology will only support those users who have connected with them<br>
+      and have signed a Support Arrangement.</b></i>
+<p>When you want to share this tool, follow the steps listed below:</p>
+<ol>
+<li><b>Make a copy</b> of your working ScripTweet tool - <b>Never share it with your Secrets in it!</b></li>
+<li>Open the copy you just created and use the <b>Reset to Factory Default</b>
+    option from the menu to clear out your Twitter Key and Secrets from the spreadsheet.<br>
+    Never share the spreadsheet without <b>Removing</b> the Keys and Secrets from the
+    Settings Page.</li>
+<li>Click the blue Share button at the top right corner of your Google Spreadsheet’s screen.</li>
+<li>Make sure anyone with the link is able to View the content of the Spreadsheet.</li>
+<li>Copy the URL within the window that appears.</li>
+<li>Paste this URL in an email to whomever you want to share it with - they better have a
+    Gmail or Google Apps for Work email address.<br>
+   <b>But hold on before you send the email!</b> You must follow the next step!</li>
+<li>In the URL you would see the word "edit" - replace that with "copy" (remove the ” “).<br>
+    For example, may be you would get <br><hr>
+    "https://docs.google.com/spreadsheets/d/1inIk0s2QI7kpEgeuVcvBk5cFl4AiaB-07bEQZ_aILX4/<b>edit</b>?usp=sharing"<br><hr>
+    Now look closely at that example URL, notice the word "edit".<br>That word needs to be replaced with "copy" like so:<br><hr>
+    "https://docs.google.com/spreadsheets/d/1inIk0s2QI7kpEgeuVcvBk5cFl4AiaB-07bEQZ_aILX4/<b>copy</b>?usp=sharing"<br><hr>
+    and you need to get rid of the quotes as well.</li>
+<li>Please note that when they receive the email, Google will prompt them to make their own copy of the tool.<br>
+    If it did not; may be you made a mistake while sending the link or Google has changed the way it all works!<br>
+    The receipient may also want to check the Google Account their browser is using.</li>
+<li>You may also copy and paste the Sharing URL shown below into an email and send that email.
+    Note that the word 'edit' has been replaced with 'copy' in the Sharing URL shown below.</li>
+</ol>
+<p><b>The URL for sharing this ScripTweet Tool is:</b> (you can copy and paste this in an email to your friend):
+   <textarea rows="2" id="sharingURL" readonly style="width:100%; font-family: courier; font-size: 14px"
+    placeholder="The sharing URL for this Spreadsheet shows here."></textarea></p>
+<p>Hope you find this information useful. You can use the buttons below to reach Wake Technology or to close this message window.</p>
+<div class="block">
+  <a class="button blue" href="mailto:support@wake-technology.com" style="width:120px;">Send Email</a>
+  <a class="button blue" href="https://twitter.com/waketechintegra" style="width:220px;margin-right:10px">Tweet @WakeTechIntegra</a>  
+  <input class="red" type="button" value="Close" onclick="google.script.host.close()" />
+</div>
+</form>
+
+<script>
+  google.script.run.withSuccessHandler(showTemplate).getVersionNameNumberURL();  
+</script>

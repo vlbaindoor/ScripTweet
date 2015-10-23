@@ -1,0 +1,5 @@
+<!-- Use a templated HTML printing scriptlet to import common stylesheet. -->
+<?!= HtmlService.createHtmlOutputFromFile('Stylesheet').getContent(); ?>
+
+<p>We are almost done.<br>Click the Authorise button to connect your Twitter account to ScripTweet."</p>
+<p><input class="green" type="button" value="Authorise Twitter" onclick="window.open('<?= authorizationURL; ?>','_blank');google.script.host.close();return false;"/></p>

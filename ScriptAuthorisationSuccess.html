@@ -1,0 +1,66 @@
+<link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons.css">
+
+<!-- Use a templated HTML printing scriptlet to import common stylesheet. -->
+<?!= HtmlService.createHtmlOutputFromFile('Stylesheet').getContent(); ?>
+
+<script>
+function closeWindow() {
+  google.script.host.close();
+}
+
+function showError(error) {
+  document.getElementById("error").innerHTML = error;
+}
+
+function success(e) {
+  showError(e);
+}
+
+function showTemplate(params) {
+  document.getElementById("VersionName").value = params.versionName;
+  document.getElementById("sharingURL").value = params.sharingURL;
+  document.getElementById("loading").style.display = "none";
+  document.getElementById("form").style.display = "block";
+  return;
+}
+</script>
+
+<div id="loading">Sorry, but we would not work without your authorisation!..</div>
+
+<div class="block">
+<h1>Script Authorization Success</h1>
+  <p>Version number :
+   <textarea rows="1" id="VersionName" readonly style="width:100%; font-size:1.15em; font-family:courier"
+    placeholder="Version number shows here."></textarea></p>
+<ol>
+<li>Engineering Menu would soon be activated.</li>
+<li>You would need to select the <b>"Help me set up"</b> option from the
+    Engineering Menu.</li>
+<li>General Help about this tool is available under the ScripTweet menu: "Support & Customisation" option.</li>
+<li>Please close this message window by using the button below and then REFRESH Browser.<br>
+    Thank you</li>
+</ol>
+<br><br>
+<h2 style="background-color:#FF0000; color: #00ff00; text-align: center;">Remember to Refresh Browser</h2>
+</div>
+<form id="form" style="display:none">
+<div class="form-group block">
+  <h3>We encourage you to share this ScripTweet with your friends!</h3>
+  <p><b>The URL for sharing this ScripTweet Tool is:</b>
+   (you can copy and paste the entire URL shown below into an email to your friend):
+   <textarea rows="2" id="sharingURL" readonly style="width:100%; font-family: courier; font-size: 14px"
+    placeholder="The sharing URL for this Spreadsheet shows here."></textarea></p>
+</div>
+
+<div class="block">
+  <a class="button blue" href="mailto:support@wake-technology.com" style="width:220px;">Send Email to Wake</a>
+  <a class="button blue" href="https://twitter.com/waketechintegra" style="width:220px;margin-right:10px">Tweet @WakeTechIntegra</a>  
+  <input class="red" type="button" value="Close" onclick="google.script.host.close()" />
+</div>
+
+
+</form>
+
+<script>
+  google.script.run.withSuccessHandler(showTemplate).getVersionNameNumberURL();  
+</script>

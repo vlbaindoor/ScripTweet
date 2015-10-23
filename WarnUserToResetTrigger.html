@@ -1,0 +1,60 @@
+<link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons.css">
+
+<!-- Use a templated HTML printing scriptlet to import common stylesheet. -->
+<?!= HtmlService.createHtmlOutputFromFile('Stylesheet').getContent(); ?>
+
+<script>
+
+function closeWindow() {
+  google.script.host.close();
+}
+
+function showError(error) {
+  document.getElementById("error").innerHTML = error;
+}
+
+function success(e) {
+  showError(e);
+}
+
+function showTemplate(versionName) {
+  document.getElementById("VersionName").value = versionName;
+  document.getElementById("loading").style.display = "none";
+  document.getElementById("form").style.display = "block";
+  return;
+}
+
+</script>
+
+<div id="loading">Loading Twitter form..</div>
+
+<form id="form" style="display:none">
+  <div class="form-group block">
+  <p>The <a href="http://www.wake-technology.com">ScripTweet</a> app lets you send Tweets from a Google Spreadsheet.</p>
+  <h1>CAUTION!</h1>
+  <h2>You seem to have modified the Tweet Interval</h2>
+  <p>You need to take the following actions before the tool can work correctly.</p>
+  <ol>
+    <li>Click on the <b>STOP Regular Tweets</b> blue button to cancel the present
+        timer that is running on Google Servers</li>
+    <li>Wait for till status displayed changes to <b>"NOT Tweeting"</b> or on 
+        the Settings Sheet "Triggers Set/Off" says <b>"OFF"</b></li>
+    <li>Click on the <b>"TWEET Regularly"</b> blue button.</li>
+    <li>Wait till the status displayed changes to <b>"Tweeting Periodically"</b></li>
+  </ol>
+  <h2>If you do not follow the above instructons the tool may appear to work
+      differently from what you expect it to.</h2>
+  <p>Version number :
+   <textarea rows="1" id="VersionName" readonly style="width:100%;font-size:1.15em;font-family: courier"
+    placeholder="Version number shows here."></textarea></p>
+</div>
+<div class="block">
+  <a class="button blue" href="mailto:support@wake-technology.com" style="width:120px;">Send Email</a>
+  <a class="button blue" href="https://twitter.com/waketechintegra" style="width:220px;margin-right:10px">Tweet @WakeTechIntegra</a>  
+  <input class="red" type="button" value="Close" onclick="google.script.host.close()" />
+</div>
+</form>
+
+<script>
+  google.script.run.withSuccessHandler(showTemplate).getVersionNameNumber();  
+</script>

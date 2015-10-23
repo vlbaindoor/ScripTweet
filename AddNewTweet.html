@@ -1,0 +1,89 @@
+<link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons.css">
+
+<!-- Use a templated HTML printing scriptlet to import common stylesheet. -->
+<?!= HtmlService.createHtmlOutputFromFile('Stylesheet').getContent(); ?>
+
+<script>
+
+  function closeWindow() {
+    google.script.host.close();
+  }
+
+  function showError(error) {
+    document.getElementById("error").innerHTML = error;
+  }
+  
+  function success(e) {
+    showError(e);
+  }
+
+  function showPresentValues(params) {
+  
+    if (params.textMessageToTweet === "") params.textMessageToTweet = "ScripTweet is a tool developed by Wake-Technology.com";
+    if (params.longURL === "")            params.longURL = "http://www.wake-technology.com/contact-me/";
+
+
+    document.getElementById("textMessageToTweet").value = params.textMessageToTweet;
+    document.getElementById("longURL").value            = params.longURL;
+    document.getElementById("imageFileName").value      = params.imageFileName;
+
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("form").style.display = "block";
+
+    return;
+  }
+
+  function validate() {
+    var params = {
+      textMessageToTweet : document.getElementById("textMessageToTweet").value,
+      longURL            : document.getElementById("longURL").value,
+      imageFileName      : document.getElementById("imageFileName").value
+    };
+    // We need tweetText to be non null
+    if (params.textMessageToTweet === "") {
+     showError("Oops! We do need a text to Tweet.");
+     return;
+    }
+
+    // Let us check if user forgot to key in longURL
+    if (params.longURL === "") {
+     showError("Oops! You need to provide Long URL");
+     return;
+    }  
+
+    showError("Saving data, please wait..");
+
+    google.script.run.withSuccessHandler(success).memoriseUserKeyedInData(params);
+  }
+
+</script>
+
+<div id="loading">Loading ..</div>
+
+<form id="form" style="display:none">
+  <div class="form-group block">
+   <h2>Adding new message for Tweeting</h2>
+   <p>Please enter the message you want to Tweet using this tool (maximum of 100) in the text box here:</p>
+    <textarea rows="1"  maxlength="100" size="100" id="textMessageToTweet" style="width:100%; font-size:1.15em; font-family:courier"
+    placeholder="Enter your message here."></textarea>
+    <p>Please enter a long URL here:</p>
+    <textarea rows="1" id="longURL" style="width:100%; font-size:1.15em; font-family:courier"
+    placeholder="Please enter a long URL here."></textarea>
+    <p>Please enter (Optional) Image File Name stored on your Google Drive here:</p>
+    <textarea rows="1" id="imageFileName" style="width:100%; font-size:1.15em; font-family:courier"
+    placeholder="Please enter an Image File Name (stored on your Google Drive and file size less than 3 MB) here."></textarea>
+  </div>
+
+  <p class="error" id="error">Click <em>Save</em> button below to save data and add to SpreadSheet</p>
+
+  <div class="form-group block">
+    <input class="green" type="button" value="Save" onclick="validate()" />
+    <input class="blue" type="button" value="Close" onclick="google.script.host.close()" />
+    <input class="red" type="button" value="CANCEL" onclick="google.script.host.close()" />
+  </div>
+
+</form>
+
+<script>
+  google.script.run.withSuccessHandler(showPresentValues).recollectUserKeyedInData();  
+</script>

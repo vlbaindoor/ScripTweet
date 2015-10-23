@@ -1,0 +1,44 @@
+<link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons.css">
+
+<!-- Use a templated HTML printing scriptlet to import common stylesheet. -->
+<?!= HtmlService.createHtmlOutputFromFile('Stylesheet').getContent(); ?>
+
+<script>
+  function closeWindow() {
+    google.script.host.close();
+  }
+
+  function showError(error) {
+    document.getElementById("error").innerHTML = error;
+  }
+  
+  function success(e) {
+    showError(e);
+  }
+
+  function showPresentValues(params) {
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("form").style.display = "block";
+    return;
+  }
+</script>
+
+<div id="loading">Loading ..</div>
+
+<form id="form" style="display:none">
+  <div class="form-group block">
+    <div class="block">
+      <p>The <a href="http://www.wake-technology.com">ScripTweet</a> app lets you send Tweets from a Google Spreadsheet.</p>
+      <br>
+      <p style="text-align:center">Success! Your Twitter App is now connected with ScripTweet. Please close this window.</p>
+    </div>
+    <div class="block">
+      <a class="button blue" href="mailto:support@wake-technology.com" style="width:220px;">Send Email to Wake</a>
+      <a class="button blue" href="https://twitter.com/waketechintegra" style="width:220px;margin-right:10px">Tweet @WakeTechIntegra</a>       
+    </div>
+  </div>
+</form>
+
+<script>
+  google.script.run.withSuccessHandler(showPresentValues).getKeySecretsFromProperties();  
+</script>

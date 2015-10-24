@@ -33,7 +33,6 @@ function moveOldTweetsToNewSpreadSheet_() {
   var dataRange = msgsSheet.getRange(1, 1, lastRow, lastColumn);
   var myData = dataRange.getValues();
 
-
   var params = createNewSpreadSheet_();
   var newSS =  params.fileHandle;
   var newMsgsSheet = newSS.getActiveSheet();

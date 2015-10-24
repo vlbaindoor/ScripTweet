@@ -82,7 +82,7 @@ function onOpen() {
 /**
  * Function to get the menu title based on the version number,
  * release number etc
- * @returns {[[Type]]} [[Description]]
+ * @returns {String} returns a string that can be used as a menu title.
  */
 function getMenuTitle_() {
   var versionNumber = getVersionNumber_();

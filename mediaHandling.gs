@@ -14,35 +14,6 @@ function getMyFileByName_(fileName) {
   }
 }
 
-
-/*  For testing.
-* Use Vivek'sJustAMinuteThumbnail.gif as file name
-function getMyFile() {
- var fileName;
- var msg;
- // Display a dialog box with a title, message, input field, and "Yes" and "No" buttons. The
- // user can also close the dialog by clicking the close button in its title bar.
- var ui = SpreadsheetApp.getUi();
- var response = ui.prompt('File Name Please', 'File Name Please:', ui.ButtonSet.YES_NO);
-
- // Process the user's response.
- if (response.getSelectedButton() == ui.Button.YES) {
-   Logger.log('File Name entered is %s.', response.getResponseText());
-   fileName = response.getResponseText();
- } else if (response.getSelectedButton() == ui.Button.NO) {
-   Logger.log('The user didn\'t want to provide a file name.');
- } else {
-   Logger.log('The user clicked the close button in the dialog\'s title bar.');
- }
- 
- Logger.log("Going to look for the file %s", fileName);
- var file = getMyFileByName_(fileName);
- msg = "File Name: " + fileName + " and ID is :<" + file.getId() + ">";
- Logger.log(msg);
- ui.alert( msg);
-}
-*/
-
 /**
 * Upload a single image to Twitter and retrieve the media ID for later use in 
 * sendTweet() (using the media_id_string params)
@@ -62,11 +33,11 @@ function uploadMedia_(imageblob) {
     method: "POST",
     payload: { "media" : imageblob }
   };
-  twitterService.checkAccess();
+  
   twitterService.paramLocation_ = "uri-query";
   try {
     var result = twitterService.fetch(url, options);
-    Logger.log("Upload media success. Response was:\n" + result.getContentText() + "\n\n");
+    Logger.log("Upload media success. Response was:\n" + result);
     return JSON.parse(result.getContentText("UTF-8"));
   }  
   catch (e) {
@@ -105,7 +76,7 @@ function handleMedia_(sheet, rowIndex, dataValues) {
         if (media.getSize() > 3145728) {
           throw "Error: Image size over 3MB. Size: " + media.getSize();
         }
-        var mediaResponse = uploadMedia(media.getBlob());
+        var mediaResponse = uploadMedia_(media.getBlob());
         // If an error occurred throw an exception with the message returned from the upload.
         if (mediaResponse.hasOwnProperty("message")) {
           throw "Error uploading Image: " + mediaResponse.message;
@@ -123,3 +94,68 @@ function handleMedia_(sheet, rowIndex, dataValues) {
   }
   return params;
 }
+
+function tweetTweet_(tweet, params) {
+  Logger.log("Going to tweet: <%s>", tweet);
+
+  var twitterService = getTwitterService_();
+  if (!twitterService.hasAccess()) {
+    return twitterService.authorize();
+  }
+  var payload = {
+    "status" : tweet
+  };
+
+  if (params) {
+    for(var i in params) {
+      if(params.hasOwnProperty(i)) {
+        payload[i.toString()] = params[i];   
+      }
+    }
+  }
+
+  var options = {
+    method: "POST",
+    payload: payload,
+    muteHttpExceptions : true
+  };
+  
+  var statusUrl = "https://api.twitter.com/1.1/statuses/update.json";
+  
+  try {    
+    var result = twitterService.fetch(statusUrl, options);
+    Logger.log("Send tweet success. Response was: " + result.getContentText("UTF-8")); 
+    return JSON.parse(result.getContentText("UTF-8"));
+  } catch (e) {
+    Logger.log("Send tweet failure. Error was:\n" + JSON.stringify(e) + "options were:\n" + JSON.stringify(options));
+    throw e;  // Changed from null to e so we can check the error messages returned.
+  }
+}
+
+/*  For testing.
+* Use Vivek'sJustAMinuteThumbnail.gif as file name
+function getMyFile() {
+ var fileName;
+ var msg;
+ // Display a dialog box with a title, message, input field, and "Yes" and "No" buttons. The
+ // user can also close the dialog by clicking the close button in its title bar.
+ var ui = SpreadsheetApp.getUi();
+ var response = ui.prompt('File Name Please', 'File Name Please:', ui.ButtonSet.YES_NO);
+
+ // Process the user's response.
+ if (response.getSelectedButton() == ui.Button.YES) {
+   Logger.log('File Name entered is %s.', response.getResponseText());
+   fileName = response.getResponseText();
+ } else if (response.getSelectedButton() == ui.Button.NO) {
+   Logger.log('The user didn\'t want to provide a file name.');
+ } else {
+   Logger.log('The user clicked the close button in the dialog\'s title bar.');
+ }
+ 
+ Logger.log("Going to look for the file %s", fileName);
+ var file = getMyFileByName_(fileName);
+ msg = "File Name: " + fileName + " and ID is :<" + file.getId() + ">";
+ Logger.log(msg);
+ ui.alert( msg);
+}
+*/

@@ -1,5 +1,7 @@
 var EXPIRY_TIME  = "2016-01-01 23:42"; 
- 
+/**
+ * Function to auto expire sharing of the file at the EXPIRY_TIME
+ */
 function autoExpire_() {
   var id;
   var asset;
@@ -45,7 +47,10 @@ function autoExpire_() {
     Logger.log(e.toString());
   }
 }
- 
+
+/**
+ * Gets the triggers and adds the trigger at EXPIRY TIME
+ */
 function start_() {
   var triggers = ScriptApp.getProjectTriggers();
   for (var i in triggers) {

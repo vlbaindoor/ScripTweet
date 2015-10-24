@@ -294,6 +294,9 @@ function help_() {
 	ss.show(html);
 }
 
+/**
+ * Function to show warning message to the user since there has been some cell editing.
+ */
 function setTweetNeedRePrepare_() {
   TWEET_NEED_RE_PREPARED = true;
   clearRangeFormat();
@@ -307,6 +310,9 @@ function setTweetNeedRePrepare_() {
   }
 }
 
+/**
+ * Function to clear the spreadsheet of values to remove existing data
+ */
 function clearRangeFormat() {
   var msgsSheet = SpreadsheetApp.getActiveSpreadsheet()
                   .getSheetByName(MessagesForTweetingSheet);
@@ -320,6 +326,9 @@ function clearRangeFormat() {
   }
 }
 
+/**
+ * Function to display the status of the Auto Tweet trigger status
+ */
 function updateTriggerStatusDisplay_() {
   var settings = SpreadsheetApp.getActiveSpreadsheet()
                         .getSheetByName(SettingsSheet);
@@ -373,14 +382,15 @@ function updateTriggerStatusDisplay_() {
   
 }
 
-
 /**
  * *********************** TwitterFunctions.gs
  * ***************************************
  */
-/*
+
+/**
  * This function creates a Service and sets up 'twitter' as the Callback
  * function.
+ * @returns {Object} created service using the OAuth1 library
  */
 function getTwitterService_() {
   getSettingsFromSheet_();
@@ -393,8 +403,15 @@ function getTwitterService_() {
     .setPropertyStore(PropertiesService.getUserProperties());
 }
 
-//This is set up as a call back function for a service
-//set up by getTwitterService_ function
+/**
+ * This function is set up as a call back function for a service
+ * set up by getTwitterService_ function. The name of this function
+ * is given indirectly via a Global variable functionNameForUserCallback
+ * @param   {Object} request from Twitter.com
+ * @returns {Object} HTML Service is used to create a Template from a HTML file
+ *                   and depending on success or failure of handleCallback request
+ *                   appropriate HTML template is chosen
+ */
 function userCallback(request) {
   var twitterService = getTwitterService_();
   var isAuthorized = twitterService.handleCallback(request);
@@ -411,9 +428,11 @@ function userCallback(request) {
   }
 }
 
-//This function would clear the service set up by the
-// getTwitterService_ function
-//Calling/Running this function would force re-authorisation requirement
+
+/**
+ * This function would clear the service set up by the getTwitterService_ function
+ * Calling/Running (from debugger) this function would force Twitter re-authorisation requirement
+ */
 function clearService() {
   var userResponse = Browser.msgBox("CONFIRMATION",
                              'Are you sure you want to clear Twitter Authorisation? You would be required to re-authorise. Select YES to confirm.',
@@ -426,6 +445,10 @@ function clearService() {
         .reset();
 }
 
+/**
+ * This function deletes the stored Script Property oauth.twitter after re-confirming
+ * from the user that it is what they want to do
+ */
 function rewokeTwitterService() {
   var userResponse = Browser.msgBox("CONFIRMATION",
                              'Are you sure you want to rewoke Twitter Authorisation? You would be required to re-authorise. Select YES to confirm.',
@@ -439,6 +462,9 @@ function rewokeTwitterService() {
   scriptProperties.deleteProperty('oauth1.twitter');
 }
 
+/**
+ * Function to create template from HTML file Config.html and show it to user
+ */
 function authTwitter_() {
   var html = HtmlService.createTemplateFromFile('Config')
               .evaluate().setWidth(1000).setHeight(540)
@@ -448,11 +474,12 @@ function authTwitter_() {
   ss.show(html);
 }
 
-//This function creates a Template from file using the Html Service
-//which loads the HTML content from the 'text.html' file which also
-//executes functions within that html file.
-//Then the validate function within that text.html is called
-//which ends up calling saveTweetTemplate function
+/**
+ * This function creates a Template from file using the Html Service which loads the
+ * HTML content from the 'text.html' file which also executes functions within that
+ * html file. Then the validate function within that text.html is called which ends up
+ * calling saveTweetTemplate function
+ */
 function createTweetsUsingTemplate() {
   var html = HtmlService.createTemplateFromFile('PrepareTemplate')
                 .evaluate().setWidth(1000).setHeight(540)
@@ -462,7 +489,11 @@ function createTweetsUsingTemplate() {
   ss.show(html);
 }
 
-//This function is called from the HTML file Config.html
+/**
+ * This function is called from the HTML file Config.html
+ * It checks the Twitter authorisation status and 
+ * @returns {String} to inform the user.
+ */
 function getTwitterAuthStatus() {
   try {
     var twitterService = getTwitterService_();
@@ -480,10 +511,15 @@ function getTwitterAuthStatus() {
   }
 }
 
-/* This function is called from the HTML file text.html.
+
+
+/**
+ * This function is called from the HTML file text.html.
  * This calls mergeTemplateWithColumnData_ to actually merge the template and text
  * from columns referred in the template from MessagesForTweetingSheet sheet and
  * actually writes the formed Tweet into the column named Tweet.
+ * @param   {Object} params the template
+ * @returns {String} for informing the user
  */
 function saveTweetTemplate(params) {
   try {
@@ -500,6 +536,12 @@ function saveTweetTemplate(params) {
   }
 }
 
+/**
+ * This function does almost same thing as the saveTweetTemplate except
+ * that this function uses a default template since there
+ * is none passed in as parameter
+ * @returns {String} for informing the user
+ */
 function useDefaultTweetTemplate() {
   try {
     doProperty_("templateForTweet", defaultTemplate);
@@ -515,11 +557,17 @@ function useDefaultTweetTemplate() {
   }
 }
 
-//This function is called from the HTML file text.html
+/**
+ * This function is called from the HTML file text.html
+ * @returns {Object} the teplateForTweet from properties
+ */
 function getTweetTemplate() {
   return {templateForTweet : doProperty_("templateForTweet")};
 }
 
+/**
+ * Function to Tweet away using default template
+ */
 function tweetAway() {
   var status;
   var thereWasError = false;
@@ -609,9 +657,12 @@ function tweetAway() {
   if (thereWasError == false)
     updateLastRunUserInfo_();
 }
-
-
-
+/**
+ * Function to send tweet messages. This function goes through the spreadsheet
+ * and checks each row to see if it is to be tweeted or not and then tweets it.
+ * After tweeting it checks for response from Twitter and records that response
+ * in the Status column of the spreadsheet
+ */
 function sendTweets() {
   var status;
   var thereWasError = false;
@@ -704,9 +755,15 @@ function sendTweets() {
     updateLastRunUserInfo_();
 }
 
-// Return true if we need to Tweet otherwise return false
-// Incorporate more conditions as we develop ScripTweet further
-// At present there is only one condition
+/**
+ * Function to check whether a specific row has tweets that need to sent or not
+ * Return true if we need to Tweet otherwise return false Incorporate more conditions
+ * as we develop ScripTweet further At present there is only one condition
+ * @param   {Object} data      spreadsheet range of cells containing possible tweet messages etc
+ * @param   {Number} index     row number of the spreadsheet which is being considered
+ * @param   {Number} colStatus column index for checking - whether to tweet or not to tweet
+ * @returns {Boolean}  false if row is not to be used to send tweet, true if row has message to be tweeted
+ */
 function toSendOrNotToSend_(data, index, colStatus) {
   // We shall skip the row if the Status in ColStatus says 'SENT'
   if (data[index][colStatus].toString().trim().toUpperCase() === "SENT") {
@@ -719,16 +776,15 @@ function toSendOrNotToSend_(data, index, colStatus) {
   return true;
 }
 
-/* This function is called to actually merge the template and text
- * from columns referred in the template from MessagesForTweetingSheet sheet and
- * actually writes the formed Tweet into the column named Tweet.
- * The replaceVariables_ is the function whichdoes the replacement
- * of the template elements with actual data
- * We also call checkPostLength function to check the length
- * of the resulting string. We also change the colour of
- * the Post Length Status column of the spreadsheet to indicate
- * green, orange or otherwise status of the tweet text that may get
- * Tweeted.
+
+/**
+ * This function is called to actually merge the template and text from columns referred
+ * in the template from MessagesForTweetingSheet sheet and actually writes the formed Tweet
+ * into the column named Tweet. The replaceVariables_ is the function which does 
+ * the replacement of the template elements with actual data.
+ * We also call checkPostLength function to check the length of the resulting string.
+ * We also change the colour of the Post Length Status column of the spreadsheet to
+ * indicate  green, orange or otherwise status of the tweet text that may get Tweeted.
  */
 function mergeTemplateWithColumnData_() {
   var ss = SpreadsheetApp.getActive();
@@ -750,6 +806,15 @@ function mergeTemplateWithColumnData_() {
   TWEET_NEED_RE_PREPARED = false;
 }
 
+/**
+ * Function to prepare the tweet message from one row. This function is
+ * mainly called from mergeTemplateWithColumnData function but can be called
+ * from elsewhere
+ * @param {Object} template this should either be a user defined template
+ *                            or a default template
+ * @param {Object} sheet    spreadsheet
+ * @param {Number} i        Row index to be processed
+ */
 function prepareOneRowToTweet_(template, sheet, i) {
   var data = sheet.getDataRange().getValues();
   var headers = data[1];
@@ -777,6 +842,11 @@ function prepareOneRowToTweet_(template, sheet, i) {
  * *********************** SettingsFunctions.gs
  * ***************************************
  */
+
+/**
+ * Function to get settings from the spreadsheet and assign them 
+ * to Global Constants
+ */
 function getSettingsFromSheet_() {
   var settings = SpreadsheetApp.getActiveSpreadsheet()
                     .getSheetByName(SettingsSheet);
@@ -788,6 +858,15 @@ function getSettingsFromSheet_() {
                         .getValue();
 }
 
+/**
+ * Function to set the settings into the spreadsheet
+ * @param {String} twitterAppName    this is for user's own information - the name they gave to 
+ *                                   Twitter App that they created on Twitter.com servers
+ * @param {String} ConsumerKey       Consumer key that is generated for the Twitter App
+ * @param {String} ConsumerSecret    Consumer Secret that is generated for the Twitter App
+ * @param {String} AccessToken       Access Token that is generated for the Twitter App
+ * @param {String} AccessTokenSecret Access Token Secret that is generated for the Twitter App
+ */
 function setSettingsToSheet_(twitterAppName,
                              ConsumerKey, ConsumerSecret,
                              AccessToken, AccessTokenSecret) {
@@ -801,6 +880,10 @@ function setSettingsToSheet_(twitterAppName,
 			AccessTokenSecret);
 }
 
+/**
+ * Function to get the Project Key from the built in getScriptProjectKey function
+ * and set it as a value for user's information
+ */
 function setProjectKey_() {
 	var settings = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
 			SettingsSheet);
@@ -808,9 +891,13 @@ function setProjectKey_() {
 			getScriptProjectKey());
 }
 
-/* This function either saves the 'value' as the value for property 'key' or
- * if the 'value' parameter is null (not given), it retrieves 
+/**
+ * if the 'value' parameter is null (not given), it retrieves
  * the present value and returns it
+ * @param   {String} key   string name for the property
+ * @param   {Object} value value to be assigned to the property
+ * @returns {Object} If the value parameter is not given then this function
+ *                   returns the current value of that property
  */
 function doProperty_(key, value) {
 	var properties = PropertiesService.getUserProperties();
@@ -822,9 +909,20 @@ function doProperty_(key, value) {
 }
 
 /** *********************** AddRow.gs *************************************** */
-//The optIndex needs to be 2 to skip the first row in the spreadsheet and
-//insert data. In our case
-//it needs to be 3 as first two rows are header and status info
+
+/**
+ * Function to insert a row of data - this inserts the row as the first row
+ * as against the usual append to the end
+ * 
+ * @param {Object} sheet    Spreadsheet to insert row into
+ * @param {Object}   rowData  an array of parameterised elements that go into specified columns
+ *                            the parameter name would indicate the column name
+ * @param {[[Type]]} optIndex this is an offset to protect the header rows so that 
+ *                            the insertion happens just below the header rows
+ *                            The optIndex needs to be 2 to skip the first row in the
+ *                            spreadsheet and insert data. In our case it needs to be 3
+ *                            as first two rows are header and status info
+ */
 function insertRow_(sheet, rowData, optIndex) {
   var messageToTweet = rowData.messageToTweet;
   var longURL        = rowData.longURL;
@@ -855,6 +953,13 @@ function insertRow_(sheet, rowData, optIndex) {
 }
 
 /** *********************** shortenURL.gs *************************************** */
+
+/**
+ * Function to get short URL given the long URL. This uses the Google URL Shortener
+ * Service and hence that API needs to be enabled for this to work.
+ * @param   {[[Type]]} longURL the normal URL given by the user
+ * @returns {[[Type]]} the shortened URL as provided by the Google URL Shortener service
+ */
 function shortenURL_(longURL) {
   Logger.log("Going to call Google Shortener for URL: " + longURL);
   var shortUrl = UrlShortener.Url.insert({longUrl : longURL});
@@ -865,6 +970,16 @@ function shortenURL_(longURL) {
 /**
  * *********************** ScripTweetStatusFunctions.gs
  * ***************************************
+ */
+/** 
+
+/**
+ * Function to get a colour to be used for notifying the user - depending on
+ * the length of a post that is meant to be tweeted
+ * @param   {String} contentCheckMsg In this package the parameter
+ *                                     passed is what is returned by the function checkPostLength
+ * @returns {String}   returns name of the colour to be used
+ *                     - red, orange, green or white as a string
  */
 function getPostLengthColour(contentCheckMsg) {
   switch (contentCheckMsg) {
@@ -883,6 +998,13 @@ function getPostLengthColour(contentCheckMsg) {
   }
 }
 
+/**
+ * Function to update the last run information - this records the date and time
+ * as per the timezone and locale settings into two different locations - one in
+ * the Message for Tweeting sheet and the other in Settings sheet.
+ * Note that the one on Messages for Tweeting sheet gets over written by 
+ * other user informational messages
+ */
 function updateLastRunUserInfo_() {
   var msgsSheet = SpreadsheetApp.getActiveSpreadsheet()
                     .getSheetByName(MessagesForTweetingSheet);
@@ -923,6 +1045,12 @@ function updateLastRunUserInfo_() {
                      .setWrap(true);
 }
 
+/**
+ * Function to display information to the user.
+ * @param {String} msg1       This is a very short message one word or two
+ * @param {String} msg2       This is the message
+ * @param {String} statusType This determines the colour of the displayed message
+ */
 function setStatusInfoForUser_(msg1, msg2, statusType) {
   switch (statusType) {
 	case 'ERROR':
@@ -943,6 +1071,15 @@ function setStatusInfoForUser_(msg1, msg2, statusType) {
   }
 }
 
+/**
+ * This is the actual function which sets the content of the spread sheet
+ * so that the user can read the status messages
+ * @param {String} msg1             This is a very short message one word or two
+ * @param {String} msg2             This is the message
+ * @param {String} backgroundColour background colour - the cell is set to this 
+ *                                    so that the user can notice the change
+ * @param {String} fontColour       colour of the text
+ */
 function setUserStatusInfo_(msg1, msg2, backgroundColour, fontColour) {
 	var msgsSheet = SpreadsheetApp.getActiveSpreadsheet()
                     .getSheetByName(MessagesForTweetingSheet);
@@ -972,6 +1109,16 @@ function setUserStatusInfo_(msg1, msg2, backgroundColour, fontColour) {
  * **************************** EncodeString.gs
  * **************************************
  */
+
+/**
+ * Twitter prohibits usage of certain characters in messages and hence this function
+ * replaces those characters with what is acceptable to Twitter
+ * @param   {String} q the string representing the message required to be tweeted
+ *                     but may have characters prohibited by Twitter
+ * @returns {String} The string which is encoded and formed as a URI Component. 
+ *                   Note that this string may be difficult to read on its own
+ *                   but would render correctly when used by the POST function.
+ */
 function encodeString_(q) {
   var str = q;
   str = str.replace(/!/g, '?');
@@ -986,6 +1133,19 @@ function encodeString_(q) {
  * ******************************************* ColumnsRowsUtils.gs
  * ********************************
  */
+
+/**
+ * Function to get the column index given a sheet, column headers and
+ * for the specified name of the column header.
+ * For example "Message To Tweet" or "Long URL" - this function returns the column
+ * index for the column with that name
+ * Note that if there is no column with that name,
+ * then a new column gets added and given that name
+ * @param   {Object} sheet   Sheet object to be operated on
+ * @param   {Object} headers Header columns as object
+ * @param   {String} name    Name of the column to be found / created
+ * @returns {Number} Column index of the column found or created
+ */
 function getColumnIndex_(sheet, headers, name) {
   var col = headers.indexOf(name);
   if (col === -1) {
@@ -996,6 +1156,12 @@ function getColumnIndex_(sheet, headers, name) {
   return col;
 }
 
+/**
+ * Function to convert specified rows into objects and retrn the object
+ * @param   {Object} data [[Description]]
+ * @param   {Object} keys [[Description]]
+ * @returns {Object} [[Description]]
+ */
 function rowsAsObjects_(data, keys) {
   var objects = [];
   for (var i = 0; i < data.length; ++i) {
@@ -1016,6 +1182,13 @@ function rowsAsObjects_(data, keys) {
   return objects;
 }
 
+/**
+ * For comparison purposes it is necessary to normalise the headers
+ * so that the case of the text would not throw off the comparison
+ * This function goes through a bunch of headers as name indicates
+ * @param   {Object} headers [[Description]]
+ * @returns {Object} [[Description]]
+ */
 function normalizeHeaders_(headers) {
   var keys = [];
   for (var i = 0; i < headers.length; ++i) {
@@ -1027,14 +1200,29 @@ function normalizeHeaders_(headers) {
   return keys;
 }
 
+/**
+ * For comparison purposes it is necessary to normalise the headers
+ * so that the case of the text would not throw off the comparison
+ * This function goes through one string
+ * @param   {String} headers [[Description]]
+ * @returns {String} [[Description]]
+ */
 function normalizeHeader_(str) {
   return str.replace(/[^\w]+/g, "").toLowerCase();
 }
 
+/**
+ * [[Description]]
+ * @param   {[[Type]]} cellData [[Description]]
+ * @returns {[[Type]]} [[Description]]
+ */
 function isCellEmpty_(cellData) {
   return typeof (cellData) == "string" && cellData == "";
 }
 
+/**
+ * Function to create HTML Template from About.html file and show it on user's screen
+ */
 function about_() {
 	var html = HtmlService.createTemplateFromFile('About').evaluate()
                  .setWidth(1000).setHeight(540).setTitle("About ScripTweet")
@@ -1043,6 +1231,11 @@ function about_() {
 	ss.show(html);
 }
 
+/**
+ * Function to create a HTML Template from AddNewTweet.html file and show it on user's screen.
+ * This function would then go on to add rows into the spreadsheet with messages that need to be
+ * Tweeted.
+ */
 function addNewTweetMessage() {
 	var html = HtmlService.createTemplateFromFile('AddNewTweet').evaluate()
 			       .setWidth(1000).setHeight(540)
@@ -1052,6 +1245,13 @@ function addNewTweetMessage() {
 	ss.show(html);
 }
 
+/**
+ * Function to handle user's data entry this gets called from the HTML display when the user
+ * wants to add a new Tweet message. This function calls insertRow_ function to actually
+ * insert a row with the data that the user keyed in.
+ * @param {Object} params From the HTML interface entries by the user are passed down
+ *                        to this function
+ */
 function handleUserDataEntry_(params) {
 	try {
 		var msgsSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
@@ -1089,7 +1289,13 @@ function handleUserDataEntry_(params) {
 	}
 }
 
-//This function is called from the HTML file AddNewTweet.html
+/**
+ * This function is called from the HTML file AddNewTweet.html. The user keyed in
+ * data and this function attempts to memorise it.
+ * @param   {Object} params Code within HTML file would put together user keyed in data
+ *                          and calls this function with that as the parameter
+ * @returns {String} a string representing success or failure of the user's action.
+ */
 function memoriseUserKeyedInData(params) {
 	try {
 		doProperty_("textMessageToTweet", params.textMessageToTweet);
@@ -1104,6 +1310,13 @@ function memoriseUserKeyedInData(params) {
 }
 
 //This function is called from the HTML file AddNewTweet.html
+
+/**
+ * This function is called from the HTML file AddNewTweet.html. 
+ * The stored data that the user keyed in previously is accessed and 
+ * displayed for the benefit of user.
+ * @returns {Object} Function puts together values as an object it got from storage.
+ */
 function recollectUserKeyedInData() {
 	return {
 		textMessageToTweet : doProperty_("textMessageToTweet"),
@@ -1112,6 +1325,9 @@ function recollectUserKeyedInData() {
 	};
 }
 
+/**
+ * Function to remove the Keys and Key Secrets from the spreadsheet
+ */
 function removeKeysSecrets() {
   var settings = SpreadsheetApp.getActiveSpreadsheet()
                                .getSheetByName(SettingsSheet);
@@ -1122,7 +1338,10 @@ function removeKeysSecrets() {
   settings.getRange(ACCESS_TOKEN_SECRET_CELL_INDEX).clearContent();
 }
 
-//Log information about the data-validation rule for cell TWEET_INTERVAL_CELL_INDEX
+/**
+ * Log information about the data-validation rule for cell TWEET_INTERVAL_CELL_INDEX
+ * useful during testing
+ */
 function getTweetIntervalCellValidationRules() {
 	var settings = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
 			SettingsSheet);
@@ -1137,7 +1356,9 @@ function getTweetIntervalCellValidationRules() {
 	}
 }
 
-//Function to set data-validation rule for cell TWEET_INTERVAL_CELL_INDEX
+/**
+ * Function to set data-validation rule for cell TWEET_INTERVAL_CELL_INDEX
+ */
 function setTweetIntervalCellValidationRules() {
 	var settings = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
 			SettingsSheet);
@@ -1153,8 +1374,9 @@ function setTweetIntervalCellValidationRules() {
 	cell.setDataValidation(rule);
 }
 
-// Function to add data validation rule and set default value
-// for cell TWEET_INTERVAL_CELL_INDEX
+/**
+ * Function to add data validation rule and set default value for cell TWEET_INTERVAL_CELL_INDEX
+ */
 function setTweetIntervalCellDefaultValue() {
 	setTweetIntervalCellValidationRules();
 	var settings = SpreadsheetApp.getActiveSpreadsheet()
@@ -1163,8 +1385,9 @@ function setTweetIntervalCellDefaultValue() {
                        .setValue('30 minutes');
 }
 
-// This function is called to clear out rows from the Spreadsheet
-// to start afresh
+/**
+ * This function is called to clear out rows from the Spreadsheet to start afresh
+ */
 function clearOutRows() {
 	var sheet = SpreadsheetApp.getActive().getSheetByName(
 			MessagesForTweetingSheet);
@@ -1179,6 +1402,10 @@ function clearOutRows() {
 	}
 }
 
+/**
+ * This function is to clear out the last run information
+ * - typically called from factoryDefault function
+ */
 function clearOutLastRunUserInfo_() {
 	var msgsSheet = SpreadsheetApp.getActiveSpreadsheet()
                       .getSheetByName(MessagesForTweetingSheet);
@@ -1196,7 +1423,9 @@ function clearOutLastRunUserInfo_() {
 
 }
 
-//Function to 'Factory Default' everything
+/**
+ * Function to 'Factory Default' everything
+ */
 function factoryDefault() {
   var userResponse = Browser.msgBox("CONFIRMATION",
                                     'Are you sure you want to RESET to Factory Defaults?. Select YES to confirm.',
@@ -1205,10 +1434,10 @@ function factoryDefault() {
     return;
   
   // Make sure the user is really sure of what they are doing
-  var userResponse2 = Browser.msgBox("CONFIRMATION",
+  var userResponse2 = Browser.msgBox("FINAL CONFIRMATION",
                              'Are you sure REALLY really sure you want to RESET to Factory Defaults? This is your last chance to say NO! Select YES if you are sure.',
                              Browser.Buttons.YES_NO);
-  if (userResponse2 === "no")
+  if (userResponse2 !== "yes")
     return;
   
   removeKeysSecrets();

@@ -1,5 +1,5 @@
 /*********************************************************************************
- *  S c r i p T w e e t 2.5
+ *  S c r i p T w e e t 2.7
  *  - - - - - - - - - - -------
  *  Written by Vivekananda Baindoor Rao http://www.wake-technology.com
  *
@@ -189,8 +189,6 @@ function getScriptProjectKey() {
  * by checking for a Script property. This happens when you either
  * make a copy of the ScripTweet and open it for the first time.
  *
- * @param  null
- *
  * @returns {Boolean} false when user refuses to authorise the script
  *                    true when the scriptAuthorised property is set to 'yes'
  */
@@ -219,16 +217,12 @@ function checkScriptAuthorisation_() {
   return true;
 }
 
-
 /**
  * This function is used to remove the Script Authorisation property.
  * This is useful to force re-authorisation which is required 
  * if you copy this script or you are about to share script with someone
  * by making a copy of the ScripTweet
  *
- * @param  null
- *
- * @returns null
  */
 function removeScriptAuthorisationProperty() {
 
@@ -383,11 +377,6 @@ function updateTriggerStatusDisplay_() {
 }
 
 /**
- * *********************** TwitterFunctions.gs
- * ***************************************
- */
-
-/**
  * This function creates a Service and sets up 'twitter' as the Callback
  * function.
  * @returns {Object} created service using the OAuth1 library
@@ -427,7 +416,6 @@ function userCallback(request) {
                  .setSandboxMode(HtmlService.SandboxMode.IFRAME);
   }
 }
-
 
 /**
  * This function would clear the service set up by the getTwitterService_ function
@@ -510,8 +498,6 @@ function getTwitterAuthStatus() {
     return "ERROR: " + f.toString();
   }
 }
-
-
 
 /**
  * This function is called from the HTML file text.html.
@@ -657,6 +643,7 @@ function tweetAway() {
   if (thereWasError == false)
     updateLastRunUserInfo_();
 }
+
 /**
  * Function to send tweet messages. This function goes through the spreadsheet
  * and checks each row to see if it is to be tweeted or not and then tweets it.
@@ -839,11 +826,6 @@ function prepareOneRowToTweet_(template, sheet, i) {
 }
 
 /**
- * *********************** SettingsFunctions.gs
- * ***************************************
- */
-
-/**
  * Function to get settings from the spreadsheet and assign them 
  * to Global Constants
  */
@@ -966,12 +948,6 @@ function shortenURL_(longURL) {
   Logger.log("Shortned URL: " + shortUrl.id);
   return shortUrl.id;
 }
-
-/**
- * *********************** ScripTweetStatusFunctions.gs
- * ***************************************
- */
-/** 
 
 /**
  * Function to get a colour to be used for notifying the user - depending on
@@ -1105,10 +1081,6 @@ function setUserStatusInfo_(msg1, msg2, backgroundColour, fontColour) {
                       .setHorizontalAlignment("left")
                       .setWrap(true);
 }
-/**
- * **************************** EncodeString.gs
- * **************************************
- */
 
 /**
  * Twitter prohibits usage of certain characters in messages and hence this function
@@ -1128,11 +1100,6 @@ function encodeString_(q) {
   str = str.replace(/'/g, '’');
   return encodeURIComponent(str);
 }
-
-/**
- * ******************************************* ColumnsRowsUtils.gs
- * ********************************
- */
 
 /**
  * Function to get the column index given a sheet, column headers and
@@ -1309,8 +1276,6 @@ function memoriseUserKeyedInData(params) {
 	}
 }
 
-//This function is called from the HTML file AddNewTweet.html
-
 /**
  * This function is called from the HTML file AddNewTweet.html. 
  * The stored data that the user keyed in previously is accessed and 
@@ -1448,4 +1413,1360 @@ function factoryDefault() {
   removeScriptAuthorisationProperty();
 }
 
+/** From settingUpFunctions.gs */
+/***************************************************************************
+ * 1. Go to apps.twitter.com and create a new app. Name it what ever you
+ *    want - but keep it closer to the Brand identity you are trying to
+ *    establish using this tool. 2. Use your website for the Website setting.
+ * 3. For the Callback URL use the following URL:
+ *    https://script.google.com/macros/d/<YOUR PROJECT KEY HERE>/usercallback
+ * 4. Create Access Token by going to the Keys and Access Tokens tab in the
+ *    App you just created and click the Generate an Access Token link/button
+ *    to connect from the Google Sheet with. Make sure you key in the right
+ *    values otherwise this tool would fail to Authenticate you to Twitter and
+ *    this tool would not work.
+ * 5. Once you've created the Access Token you need to get the following
+ *    values to the Settings tab of the Google Sheet:
+ *    Consumer Key (API Key), Consumer Secret (API Secret) and Access Token,
+ *    Access Token Secret You can do that by pasting them in the text fields in
+ *    the HTML form that pops up to help you.
+ * 6. After you have done all of the above, save the Spread Sheet as it is
+ *    and Reload the spread sheet by using the browser button to refresh
+ *    the browser window.
+ * 7. Authorize Script with Twitter App using the Menu Option on the
+ *    Spread Sheet. The Apps Script code that runs you'll need to grant
+ *    Authorization. You'll get a message saying that Authorization
+ *    is Required. Accept and Continue. 
+ * 8. It would bring up a list of things this Script will need to authorise.
+ *    You would need to accept that as well.
+ * 
+ */
 
+/**
+ * This records the Keys and Secrets that are stored as Script Properties
+ * back into the spreadsheet itself so that user can see them.
+ */
+function setupKeysSecretsFromPropertiesToSheet_() {
+	// Let us get the settings from the Property store
+	var params = getKeySecretsFromProperties();
+	setSettingsToSheet_(params.twitterAppName,
+                        params.consumerKey, params.consumerSecret,
+			            params.accessToken, params.acessTokenSecret);
+}
+
+/**
+ * This function creates a Template from file using the Html Service
+ * which loads the HTML content from the 'KeySecrets.html' file which also
+ * executes functions within that html file.
+ * Then the validate function within that KeySecrets.html is called
+ * which ends up calling setKeySecrets function
+ */
+function getKeySecretsFromUser_() {
+  var html = HtmlService.createTemplateFromFile('KeysSecrets')
+               .evaluate().setWidth(1000).setHeight(540)
+               .setTitle("Connecting up ScripTweet to Twitter")
+               .setSandboxMode(HtmlService.SandboxMode.IFRAME);
+  var ss = SpreadsheetApp.getActive();
+  ss.show(html);
+}
+
+/**
+ * The function validate calls this function from KeySecrets.html
+ * @param   {Object} params an array containing multiple objects
+ * @returns {String} for showing to the user the result
+ *                   of setting Key Secrets
+ */
+function setKeySecrets(params) {
+	try {
+		doProperty_("ProjectId", params.projectId);
+        doProperty_("twitter_app_name", params.twitterAppName.trim());
+		doProperty_("consumer_key", params.consumerKey.trim());
+		doProperty_("consumer_secret", params.consumerSecret.trim());
+		doProperty_("access_token", params.accessToken.trim());
+		doProperty_("access_token_secret", params.acessTokenSecret.trim());
+        setSettingsToSheet_(params.twitterAppName.trim(),
+                        params.consumerKey.trim(), params.consumerSecret.trim(),
+			            params.accessToken.trim(), params.acessTokenSecret.trim());
+		return "Keys and Secrets saved. You can close this window and proceed to Authorise Twitter.";
+	} catch (f) {
+		setStatusInfoForUser_('ERROR', f.toString(), 'ERROR');
+		return "ERROR: " + f.toString();
+	}
+}
+
+/**
+ * Temporary function to use existing data to put onto project properties
+ */
+function getAndSetKeySecrets() {
+	var params = getPresentKeySecrets_();
+	setKeySecrets(params);
+}
+
+/**
+ * Function to get the present Keys and Secrets from the sheet
+ * and return them as on object
+ * @returns {Object} the object consists of Keys and Secrets
+ */
+function getPresentKeySecrets_() {
+	getSettingsFromSheet_();
+	var projectId = getScriptProjectKey();
+	return {
+		projectId : projectId,
+        twitterAppName : TWITTER_APP_NAME,
+		consumerKey : CONSUMER_KEY,
+		consumerSecret : CONSUMER_SECRET,
+		accessToken : ACCESS_TOKEN,
+		acessTokenSecret : ACCESS_TOKEN_SECRET
+	};
+}
+
+/**
+ * This function is called from the HTML file KeySecrets.html.
+ * This function is used to get the values stored for Keys and
+ * Secrets as Script Properties and returns them as an objet
+ * @returns {Object} Keys and Secrets as Script Properties
+ */
+function getKeySecretsFromProperties() {
+	var projectId = getScriptProjectKey();
+	return {
+		projectId : projectId,
+        twitterAppName: doProperty_("twitter_app_name"),
+		consumerKey : doProperty_("consumer_key"),
+		consumerSecret : doProperty_("consumer_secret"),
+		accessToken : doProperty_("access_token"),
+		acessTokenSecret : doProperty_("access_token_secret")
+	};
+}
+
+/** From userInterface.gs */
+/**
+ * When spreadsheet is opened this function adds menu items
+ */
+function onOpen() {
+  getSettingsFromSheet_();
+  var menuTitle;
+  var menu;
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var msgsSheet = ss.getSheetByName(MessagesForTweetingSheet);
+
+  // We have a TimeZoneLocale sheet, let us hide it as it is not required
+  // for the viewer to see it - it would only confuse them.
+  var timeZoneLocaleSheet = ss.getSheetByName(TimeZoneLocaleSheet);
+  timeZoneLocaleSheet.hideSheet();
+  
+  ss.setActiveSheet(msgsSheet);
+  
+  if (checkScriptAuthorisation_() == false) {
+    // yet to be authorised so simply return
+    return;
+  }
+  
+  menu = [{ name : "1. Add a new Tweet message",
+            functionName : "addNewTweetMessage"},
+          { name : "2. Prepare/Re-Prepare Tweets",
+            functionName : "createTweetsUsingTemplate"},
+          { name : "3. Send Tweets",
+            functionName : "sendTweets" },
+          { name : "4. Tweet Away using default template",
+            functionName : "tweetAway" },
+          { name : "5. Tweet periodically",
+            functionName : "setOurTrigger" },
+          null,
+          { name : "6. Stop periodic Tweeting",
+            functionName : "clearOurTrigger"},
+          null,
+          { name : "Revoke Twitter Authority",
+            functionName : "rewokeTwitterService"	},
+          { name : "Erase Stored Keys and Secrets",
+            functionName : "removeKeysSecrets" },
+          { name : "Reset to Factory Default",
+            functionName : "factoryDefault" },
+          null,
+          { name : "Enable Engineering Menu",
+            functionName : "enableEngineering_" },
+          { name : "Enable Pro Menu",
+            functionName : "proMenu_"	},
+          null,
+          { name : "About",
+            functionName : "about_" },
+          { name : "Support & Customization",
+            functionName : "help_" }        
+         ];
+  
+  menuTitle = getMenuTitle_();
+  ss.addMenu(menuTitle, menu);
+  
+  // hideOneColumn_("Tweet");
+  
+  setStatusInfoForUser_('Welcome to ScripTweet',
+  'ScripTweet recommends you use Blue buttons at Top Left corner or ScriptTweet Menu above.',
+                        'NORMAL');
+  setProjectKey_();
+  
+  var params = getTimeZoneLocale();
+  var useLocale = params.presentLocale;
+  var useTimeZone = params.presentTimeZone;
+
+  localTimeZone = useTimeZone;
+  
+  SpreadsheetApp.getActiveSpreadsheet()
+                .getSheetByName(SettingsSheet)
+                .getRange(SCRIPT_TIMEZONE_CELL_INDEX)
+                .setValue(localTimeZone);
+  
+  if (CONSUMER_KEY === '') {
+    enableEngineering_();
+  }
+  
+}
+
+/**
+ * Function to get the menu title based on the version number,
+ * release number etc
+ * @returns {String} returns a string that can be used as a menu title.
+ */
+function getMenuTitle_() {
+  var versionNumber = getVersionNumber_();
+  var versionRelease = getReleaseNumber_();
+  var menuTitle;
+  // Let us convert the numbers into strings
+  versionNumber = Utilities.formatString( '%.1f', versionNumber);
+  versionRelease = Utilities.formatString( '%.1f', versionRelease);
+  menuTitle = "ScripTweet " + versionNumber + "." + versionRelease;
+  return menuTitle;
+}
+
+/**
+ * Function to set up the Engineering menu consisting
+ * of set up options
+ */
+function enableEngineering_() {
+  var engineering;
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  engineering = [
+    { name : "[Engr] Help me set up",
+      functionName : "getKeySecretsFromUser_" },
+    { name : "[Engr] Authorize Twitter",
+      functionName : "authTwitter_"	},
+    null,
+    { name : "[Engr] Add TimeZone and Locale Menu",
+     functionName : "localeTimeZoneMenu_" },
+    null,
+    { name : "[Engr] Create New Sheet",
+      functionName : "createNewSpreadSheet_"},
+    { name : "[Engr] Copy OldTweetMessages to new Sheet",
+     functionName : "makeSpreadSheetCopy_"},
+    { name : "[Engr] Move OldTweetMessages to new Sheet",
+      functionName : "moveOldTweetsToNewSpreadSheet_" },   
+    null,
+    { name : "[Engr] Add Version, Release Menu",
+     functionName : "versionReleaseDistroMenu_"}
+  ];
+  ss.addMenu("Engineering", engineering);
+  
+  setStatusInfoForUser_('You have been Warned.', 
+         'Engineering Menu Enabled Follow instructions from Engineer',
+                        'WARN');
+}
+
+/**
+ * Function to set up the Pro menu for use by user who
+ * knows what he/she is doing and hence considered a Pro
+ */
+function proMenu_() {
+	var ss = SpreadsheetApp.getActiveSpreadsheet();
+	var proMenu = [
+      {	name : "[Pro User] Initial Setup",
+		functionName : "getKeySecretsFromUser_"	},
+      {	name : "[Pro User] Finalising Setup",
+	    functionName : "setupKeysSecretsFromPropertiesToSheet_"	},
+      {	name : "[Pro User] Clear Tweets to Prepare/Re-prepare",
+		functionName : "clearTweets_" },
+      {	name : "[Pro User] Clear Status to send again",
+		functionName : "clearStatus_" },
+      {	name : "[Pro User] Tweet again",
+		functionName : "tweetAgain"	}
+     ];
+
+	ss.addMenu("Pro Menu", proMenu);
+
+	setStatusInfoForUser_('You have been Warned.',
+		'Pro Menu Enabled. We hope you know what you are doing!',
+			 'WARN');
+}
+
+/**
+ * Function to change Version numbers, release numbers and dates etc
+ */
+function versionReleaseDistroMenu_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var versionReleaseDistroMenu = [
+    { name : "[DeepEngr] Bump Release and Date",
+      functionName : "bumpReleaseDate_" },
+    { name : "[DeepEngr] Make New Version (Reset Release and set date)",
+      functionName : "makeNewVersion_" },
+    null,  
+    { name : "[DeepEngr] Create New Release",
+      functionName : "setDistroReady" }
+    ];
+  	ss.addMenu("VersionReleaseDistro", versionReleaseDistroMenu);
+
+	setStatusInfoForUser_('Second WARNING!',
+		'Version Release Distro Menu Enabled. You could get into deeper trouble!',
+			 'WARN');
+}
+
+/** From sheetUtils.gs */
+/**
+ * This function replaces template tags with data
+ *
+ * @param {String} template text including the placeholder tags
+ * @param {String} data is the actual data to replace the placeholders in the template
+ * @return {String} template is returned after modification
+ */
+function replaceVariables_(template, data) {
+	// {{email address}}
+	var templateVars = template.match(/\{\{(?:[^\}\}]+)\}\}/g);
+	if (templateVars != null) {
+		for (var i = 0; i < templateVars.length; ++i) {
+			var text = data[normalizeHeader_(templateVars[i])] || "";
+			if (text instanceof Date) {
+				var timestamp = Date.parse(text)
+				if (isNaN(timestamp) == false) {
+					text = Utilities
+							.formatDate(new Date(timestamp), SpreadsheetApp
+									.getActive().getSpreadsheetTimeZone(),
+									"MMM d, YYYY");
+				}
+			}
+			template = template.replace(templateVars[i], text);
+		}
+	}
+	return template;
+}
+
+/** From triggerFunctions.gs */
+/**
+ * Function to clear the user settable triggers for the Script
+ */
+function clearOurTrigger() {
+  var triggers = ScriptApp.getProjectTriggers();
+  for (var i = 0; i < triggers.length; i++) {
+    if (triggers[i].getEventType() == ScriptApp.EventType.CLOCK)
+      ScriptApp.deleteTrigger(triggers[i]);
+  }
+  TRIGGER_MODIFIED = false;
+  updateTriggerStatusDisplay_();
+}
+
+/**
+ * Function to check if any user settable triggers are set
+ * @returns {Boolean} true if clock based triggers are set
+ *                    otherwise it returns false
+ */
+function checkTrigger_() {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var triggers = ScriptApp.getUserTriggers(ss);
+
+    for (var i = 0; i < triggers.length; i++) {
+      if (triggers[i].getEventType() == ScriptApp.EventType.CLOCK) {
+        Logger.log("We have a Clock based trigger");
+        return true;
+      }
+    }
+    return false;
+  } catch (f) {
+    setStatusInfoForUser_('ERROR', f.toString(), 'ERROR');
+    return false;
+   }
+}
+
+/**
+ * function to set our triggers based on the value from the 
+ * settings sheet on spreadsheet
+ */
+function setOurTrigger() {
+  clearOurTrigger();
+  var settings = SpreadsheetApp.getActiveSpreadsheet()
+                  .getSheetByName(SettingsSheet);
+  var interval = settings.getRange(TWEET_INTERVAL_CELL_INDEX)
+                         .getValue();
+  switch (interval) {
+    case "12 hours":
+      ScriptApp.newTrigger(functionNameForTrigger)
+        .timeBased().everyHours(12)
+        .inTimezone(localTimeZone)
+        .create();
+      break;
+    case "8 hours":
+      ScriptApp.newTrigger(functionNameForTrigger)
+        .timeBased().everyHours(8)
+        .inTimezone(localTimeZone)
+        .create();
+      break;
+    case "6 hours":
+      ScriptApp.newTrigger(functionNameForTrigger)
+        .timeBased().everyHours(6)
+        .inTimezone(localTimeZone)
+        .create();
+      break;
+    case "4 hours":
+      ScriptApp.newTrigger(functionNameForTrigger)
+        .timeBased().everyHours(4)
+        .inTimezone(localTimeZone)
+        .create();
+      break;
+    case "2 hours":
+      ScriptApp.newTrigger(functionNameForTrigger)
+        .timeBased().everyHours(2)
+        .inTimezone(localTimeZone)
+        .create();
+      break;
+    case "1 hour":
+      ScriptApp.newTrigger(functionNameForTrigger)
+        .timeBased().everyHours(1)
+        .inTimezone(localTimeZone)
+        .create();
+      break;
+    case "30 minutes":
+      ScriptApp.newTrigger(functionNameForTrigger)
+        .timeBased().everyMinutes(30)
+        .inTimezone(localTimeZone)
+        .create();
+      break;
+    case "15 minutes":
+      ScriptApp.newTrigger(functionNameForTrigger)
+        .timeBased().everyMinutes(15)
+        .inTimezone(localTimeZone)
+        .create();
+      break;
+    case "10 minutes":
+      ScriptApp.newTrigger(functionNameForTrigger)
+        .timeBased().everyMinutes(10)
+        .inTimezone(localTimeZone)
+        .create();
+      break;
+    case "5 minutes":
+      ScriptApp.newTrigger(functionNameForTrigger)
+        .timeBased()
+        .inTimezone(localTimeZone)
+        .everyMinutes(5).create();
+      break;
+    case "2 minutes":
+      ScriptApp.newTrigger(functionNameForTrigger)
+        .timeBased()
+        .inTimezone(localTimeZone)
+        .everyMinutes(2).create();
+      break;
+    case "1 minutes":
+      ScriptApp.newTrigger(functionNameForTrigger)
+        .timeBased()
+        .inTimezone(localTimeZone)
+        .everyMinutes(1).create();
+      break;
+      
+    default:
+      Logger.log("Error: Invalid interval.");
+  }
+  // we have set the trigger so we don't want to set it again
+  TRIGGER_MODIFIED = false;
+  
+  updateTriggerStatusDisplay_();
+  SpreadsheetApp.flush();
+  Logger.log("Trigger set: " + interval);
+}
+
+/** From timeZoneLocaleFunctions.gs */
+/* TimeZone related functions for getting and setting */
+/* For testing these functions comment out all other onOpen functions
+ * But enable the one found here.
+ * Create a Sheet called as "Locale and TimeZone"
+ * The cells A2 and B2 are used to over write with present settings for the Spreadsheet
+ * The cells  C2 and D2 are used to set the setting for the spreadsheet
+ *
+ * IF YOU ARE CONFUSED BY ALL OF THE ABOVE - IGORE THIS WHOLE CODE AND SHEET AND DON'T CHANGE
+ * ANYTHING HERE.
+ */
+
+// Cell locations for GET data onto sheet called as "Locale and TimeZone"
+var GET_LOCALE_CELL_INDEX = "A2";
+var GET_TIMEZONE_CELL_INDEX = "B2";
+
+// Cell locations for SETTING from sheet to settings on sheet called as "Locale and TimeZone"
+var SET_LOCALE_CELL_INDEX = "C2";
+var SET_TIMEZONE_CELL_INDEX = "D2";
+
+/**
+ * When spreadsheet is opened this function adds menu items during Testing
+ */
+function localeTimeZoneMenu_() {
+  var menuTitle;
+  var menu;
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var timeZoneLocaleSheet = ss.getSheetByName(TimeZoneLocaleSheet);
+  timeZoneLocaleSheet.showSheet();
+  ss.setActiveSheet(timeZoneLocaleSheet);
+ 
+  menu = [{ name : "[DeepEngr] Get present Locale and TimeZone",
+            functionName : "getShowTimeZoneLocale_"},
+          { name : "[DeepEngr] Set Locale and TimeZone",
+            functionName : "setShowTimeZoneLocale_"} ];
+  
+  menuTitle = "LocaleAndTimeZoneMenu";
+  ss.addMenu(menuTitle, menu);
+
+}
+
+/**
+ * Function to set the timezone and locale settins for the spreadsheet
+ * @param {String} newLocale 
+ * @param {String} newTimeZone
+ */
+function setTimeZoneLocale(newLocale, newTimeZone) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  ss.setSpreadsheetLocale(newLocale);
+  ss.setSpreadsheetTimeZone(newTimeZone); 
+}
+
+/**
+ * Function to get the present locale and timezone settings
+ * for the spreadsheet
+ * @returns {Object} present Locale and timezones are
+ *                   returned as an object
+ */
+function getTimeZoneLocale() {
+  var presentLocale;
+  var presentTimeZone;
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  presentLocale = ss.getSpreadsheetLocale();
+  presentTimeZone = ss.getSpreadsheetTimeZone();
+  return { presentLocale: presentLocale, presentTimeZone: presentTimeZone};
+}
+
+/**
+ * Function to test the functionality
+ */
+function getShowTimeZoneLocale_() {
+  // Get the present values
+  
+  var params = getTimeZoneLocale();
+  var presentLocale = params.presentLocale;
+  var presentTimeZone = params.presentTimeZone;
+  Logger.log("Came back with Present Locale is: " + presentLocale);
+  Logger.log("Came back with Present TimeZone is: " + presentTimeZone);
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var timeZoneLocaleSheet = ss.getSheetByName(TimeZoneLocaleSheet);
+
+  // Set the locale value into spreadsheet cell
+  var showLocaleCell = timeZoneLocaleSheet.getRange(GET_LOCALE_CELL_INDEX);
+  showLocaleCell.setValue(presentLocale);
+  
+  // Set the timezone value into spreadsheet cell
+  var showTimeZoneCell = timeZoneLocaleSheet.getRange(GET_TIMEZONE_CELL_INDEX);
+  showTimeZoneCell.setValue(presentTimeZone);
+}
+
+/**
+ * Function to test the functionality
+ */
+function setShowTimeZoneLocale_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var timeZoneLocaleSheet = ss.getSheetByName(TimeZoneLocaleSheet);
+  
+  // Get Locale value from spreadsheet
+  var setLocaleCell = timeZoneLocaleSheet.getRange(SET_LOCALE_CELL_INDEX);
+  var newLocale = setLocaleCell.getValue();
+  
+  // Get TimeZone value from spreadsheet
+  var setTimeZoneCell = timeZoneLocaleSheet.getRange(SET_TIMEZONE_CELL_INDEX);
+  var newTimeZone = setTimeZoneCell.getValue();
+
+  setTimeZoneLocale(newLocale, newTimeZone);
+}
+
+/** From versionReleaseFunctions.gs */
+/******************* Version, Release, Release Date related functions ******************/
+/**
+ * Function to bump version number and get ScripTweet ready for distribution
+ */
+function setDistroReady() {
+	factoryDefault();
+	bumpReleaseNumber_();
+	setReleaseDate_();
+}
+
+/**
+ * Function to bump up the release number and set current date as release date
+ */
+function bumpReleaseDate_()
+{
+  bumpReleaseNumber_();
+  setReleaseDate_();
+}
+
+/**
+ * Make New Version, Reset Release and set date
+ */
+function makeNewVersion_() {
+  bumpVersionNumber_();
+  setReleaseNumber_(0.1);
+  setReleaseDate_();
+}
+
+/**
+ * Function to get the Version number and release number
+ * etc as if it is a name
+ * @returns {String} a formulated name which can be used to represent the version
+ */
+function getVersionNameNumber() {
+  var versionNumber = getVersionNumber_();
+  var versionRelease = getReleaseNumber_();
+  var releaseDate = getReleaseDate_();
+  
+  // Let us convert the numbers into strings
+  versionNumber = Utilities.formatString( '%.1f', versionNumber);
+  versionRelease = Utilities.formatString( '%.1f', versionRelease);
+  
+  var versionNameNumber = versionNumber + '.'
+                           + versionRelease
+                           + ' Release Date: '
+                           + releaseDate;
+  Logger.log("Returning VersionNumberDate as: " + versionNameNumber);
+  return versionNameNumber;
+}
+
+/**
+ * The following function to increase the version number by 0.1
+ */
+function bumpVersionNumber_() {
+	var versionNumber = getVersionNumber_();
+	setVersionNumber_(versionNumber + 0.1);
+}
+
+/**
+ * This function is called to set version number to specified in parameter
+ * @param {String} versionNumber 
+ */
+function setVersionNumber_(versionNumber) {
+	var settings = SpreadsheetApp.getActiveSpreadsheet()
+                      .getSheetByName(SettingsSheet);
+	settings.getRange(SCRIPT_VERSION_INDEX).setValue(versionNumber);
+    settings.getRange(SCRIPT_VERSION_INDEX).setNumberFormat("0.0");
+}
+
+// - it returns it as a string
+/**
+ * This function is called to get version number
+ * @returns {Number} returns a number so that one can
+ *                   add 0.1 to it to bump it up as and when required
+ */
+function getVersionNumber_() {
+  var settings = SpreadsheetApp.getActiveSpreadsheet()
+                               .getSheetByName(SettingsSheet);
+  var versionNumber = settings.getRange(SCRIPT_VERSION_INDEX).getValue();
+  var versionNumberStr = Utilities.formatString( '%.1f', versionNumber);
+  if (versionNumberStr != BIG_VERSION) {
+      Browser.msgBox("WARNING",
+                     'Please NOTE: Your GlobalConstantsVariable says Version is: '
+                         + BIG_VERSION
+                         + ' But your Settings Sheet says it is : ' 
+                         + versionNumberStr
+                         + ' Please correct it. Select OK to continue.',
+                      Browser.Buttons.OK);
+  }
+  return versionNumber;
+}
+
+/**
+ * function to increase the Release number by 0.1
+ */
+function bumpReleaseNumber_() {
+	var releaseNumber = getReleaseNumber_();
+	setReleaseNumber_(releaseNumber + 0.1);
+}
+
+/**
+ * This function is called to set Release number to specified in parameter
+ * @param {Number} releaseNumber
+ */
+function setReleaseNumber_(releaseNumber) {
+	var settings = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(
+			SettingsSheet);
+	settings.getRange(SCRIPT_RELEASE_NUMBER_INDEX).setValue(releaseNumber);
+    settings.getRange(SCRIPT_RELEASE_NUMBER_INDEX).setNumberFormat("0.0");
+}
+
+/**
+ * This function is called to get version number
+ * @returns {Number} [[Description]]
+ */
+function getReleaseNumber_() {
+	var settings = SpreadsheetApp.getActiveSpreadsheet()
+                    .getSheetByName(SettingsSheet);
+	var releaseNumber = settings.getRange(SCRIPT_RELEASE_NUMBER_INDEX).getValue();   
+    return releaseNumber;
+}
+
+/**
+ * This function is called to set release date to NOW
+ */
+function setReleaseDate_() {
+	var settings = SpreadsheetApp.getActiveSpreadsheet()
+                      .getSheetByName(SettingsSheet);
+	settings.getRange(SCRIPT_RELEASE_DATE_INDEX).setValue(new Date());
+	settings.getRange(SCRIPT_RELEASE_DATE_INDEX).setNumberFormat(dateFormatString);
+}
+
+/**
+ * This function is called to get release date - it returns it as a string - is this used?
+ * @returns {[[Type]]} [[Description]]
+ */
+function getReleaseDate_() {
+	var settings = SpreadsheetApp.getActiveSpreadsheet()
+                      .getSheetByName(SettingsSheet);
+	var releaseNumber = settings.getRange(SCRIPT_RELEASE_DATE_INDEX).getValue();
+	return releaseNumber;
+}
+
+/**
+ * function to get version number, spreadsheet editing URL and sharing URL
+ * and returns them as an object
+ * @returns {Object} 
+ */
+function getVersionNameNumberURL() {
+  var versionNameNumber = getVersionNameNumber();
+  var spreadSheetUrl = getSpreadSheetUrl();
+  var sharingUrl = spreadSheetUrl.replace('\/edit', '\/copy?usp=sharing');
+  return {versionName : versionNameNumber,
+          spreadSheetURL : spreadSheetUrl,
+          sharingURL : sharingUrl};
+}
+
+/**
+ * function to get spreadsheet editing URL
+ * @returns {String} spreadsheet editing URL
+ */
+function getSpreadSheetUrl() {
+  var ss = SpreadsheetApp.getActive();
+  var spreadSheetUrl = ss.getUrl();
+  return spreadSheetUrl;
+}
+
+/** From autoExpireSharing.gs */
+var EXPIRY_TIME  = "2016-01-01 23:42"; 
+/**
+ * Function to auto expire sharing of the file at the EXPIRY_TIME
+ */
+function autoExpire_() {
+  var id;
+  var asset;
+  var i;
+  var email;
+  var users;
+ 
+  // The URL of the Google Drive file or folder 
+  var URL = "https://drive.google.com/folderview?id=0B4fk8L6brI_ednJaa052";
+  
+  try {
+    // Extract the File or Folder ID from the Drive URL
+    var id = URL.match(/[-\w]{25,}/);
+    
+    if (id) {
+      asset = DriveApp.getFileById(id) ? DriveApp.getFileById(id) : DriveApp.getFolderById(id);
+      if (asset) {
+        // Make the folder / file Private 
+        asset.setSharing(DriveApp.Access.ANYONE, DriveApp.Permission.NONE);  
+        asset.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.NONE); 
+        
+        // Remove all users who have edit permissions
+        users = asset.getEditors();
+        for (i in users) {
+          email = users[i].getEmail();
+          if (email != "") {
+            asset.removeEditor(email);
+          }
+        }
+        
+        // Remove all users who have view permssions
+        users = asset.getViewers();
+        for (i in users) {
+          email = users[i].getEmail();
+          if (email != "") {
+            asset.removeViewer(email);
+          }
+        }  
+      }
+    }
+  
+  } catch (e) {
+    Logger.log(e.toString());
+  }
+}
+
+/**
+ * Gets the triggers and adds the trigger at EXPIRY TIME
+ */
+function start_() {
+  var triggers = ScriptApp.getProjectTriggers();
+  for (var i in triggers) {
+    ScriptApp.deleteTrigger(triggers[i]);
+  }
+  var time = EXPIRY_TIME;
+  
+  // Run the auto-expiry script at this date and time
+  var expireAt = new Date(time.substr(0,4),
+                          time.substr(5,2)-1,
+                          time.substr(8,2),
+                          time.substr(11,2),
+                          time.substr(14,2));
+  
+  if ( !isNaN ( expireAt.getTime() ) ) {
+    ScriptApp.newTrigger("autoExpire").timeBased().at(expireAt).create();
+  }
+}
+
+/** From extraFunctions.gs */
+/**
+ * Functions that can be used to protect and unprotect cells and prevent user
+ * entry without using menu etc - for future development
+ */
+function disableUserDataEntry_() {
+	var ss = SpreadsheetApp.getActive();
+	var sheet = ss.getSheetByName(MessagesForTweetingSheet);
+	var data = sheet.getDataRange().getValues();
+	var headers = data[1];
+
+	var colMessage = getColumnIndex_(sheet, headers, "Message Text");
+	var colLongURL = getColumnIndex_(sheet, headers, "Long URL");
+	var colURL = getColumnIndex_(sheet, headers, "URL");
+	var colTweet = getColumnIndex_(sheet, headers, "Tweet");
+	var colStatus = getColumnIndex_(sheet, headers, "Status");
+
+	for (var i = 3; i < data.length; i++) {
+		var range1 = sheet.getRange(i + 1, colMessage + 1);
+		protectRange_(range1);
+
+		var range2 = sheet.getRange(i + 1, colLongURL + 1);
+		protectRange_(range2);
+
+		var range3 = sheet.getRange(i + 1, colURL + 1);
+		protectRange_(range3);
+
+		var range4 = sheet.getRange(i + 1, colURL + 1);
+		protectRange_(range4);
+
+		var range5 = sheet.getRange(i + 1, colTweet + 1);
+		protectRange_(range5);
+	}
+}
+
+function enableUserDataEntry_() {
+	var ss = SpreadsheetApp.getActive();
+	var sheet = ss.getSheetByName(MessagesForTweetingSheet);
+	var data = sheet.getDataRange().getValues();
+	var headers = data[1];
+
+	var colMessage = getColumnIndex_(sheet, headers, "Message Text");
+	var colLongURL = getColumnIndex_(sheet, headers, "Long URL");
+	var colURL = getColumnIndex_(sheet, headers, "URL");
+	var colTweet = getColumnIndex_(sheet, headers, "Tweet");
+	var colStatus = getColumnIndex_(sheet, headers, "Status");
+	for (var i = 3; i < data.length; i++) {
+		var range1 = sheet.getRange(i + 1, colMessage + 1);
+		unProtectRange_(range1);
+
+		var range2 = sheet.getRange(i + 1, colLongURL + 1);
+		unProtectRange_(range2);
+
+		var range3 = sheet.getRange(i + 1, colURL + 1);
+		unProtectRange_(range3);
+
+		var range4 = sheet.getRange(i + 1, colURL + 1);
+		unProtectRange_(range4);
+
+		var range5 = sheet.getRange(i + 1, colTweet + 1);
+		unProtectRange_(range5);
+	}
+}
+
+function protectRange_(range) {
+	var protection = range.protect().setDescription(
+			'To edit choose Start Adding new Tweet Messages option in menu');
+}
+
+function unProtectRange_(range) {
+	var protection = range.protect().remove();
+}
+
+function unProtectAll_() {
+	// Remove all range protections in the spreadsheet that the user has
+	// permission to edit.
+	var ss = SpreadsheetApp.getActive();
+	var protections = ss.getProtections(SpreadsheetApp.ProtectionType.RANGE);
+	for (var i = 0; i < protections.length; i++) {
+		var protection = protections[i];
+		if (protection.canEdit()) {
+			protection.remove();
+		}
+	}
+}
+
+
+/** From hideUnHideColumn.gs */
+/**
+ * Function to Hide a column
+ * @param {String} columnName string which contains 
+ *                            the text used in the column
+ */
+function hideOneColumn_(columnName) {
+    var ss = SpreadsheetApp.getActive();
+    var sheet = ss.getSheetByName(MessagesForTweetingSheet);
+    var data = sheet.getDataRange().getValues();
+    var headers = data[1];
+    var columnToHide = getColumnIndex_(sheet, headers, columnName);
+    var range = sheet.getRange(1, columnToHide + 1);
+  
+    sheet.hideColumn(range);
+}
+
+/**
+ * Function to unHide or rather show a column
+ * @param {String} columnName string which contains 
+ *                            the text used in the column
+ */
+function unHideOneColumn_(columnName) {
+    var ss = SpreadsheetApp.getActive();
+    var sheet = ss.getSheetByName(MessagesForTweetingSheet);
+    var data = sheet.getDataRange().getValues();
+    var headers = data[1];
+    var columnToHide = getColumnIndex_(sheet, headers, columnName);
+    var range = sheet.getRange(1, columnToHide + 1);
+  
+    sheet.unhideColumn(range);
+}
+
+/** From logTriggers.gs */
+/**
+ * Function to check user triggers and log them using
+ * Logger
+ */
+function logTriggers() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var triggers = ScriptApp.getUserTriggers(ss);
+  Logger.log('Number of User Triggers: ' + triggers.length);
+  for (var i = 0; i < triggers.length; i++) {
+    var trigger = triggers[i];
+    Logger.log('Trigger EventType= ' + trigger.getEventType());
+    Logger.log('Trigger Handler= ' + trigger.getHandlerFunction());    
+  }
+  
+  triggers = ScriptApp.getProjectTriggers();
+  Logger.log('Number of Project Triggers: ' + triggers.length);
+  for (var i = 0; i < triggers.length; i++) {
+    var trigger = triggers[i];
+    Logger.log('Trigger EventType= ' + trigger.getEventType());
+    Logger.log('Trigger Handler= ' + trigger.getHandlerFunction());    
+  }
+} 
+
+/** From recordYourTweetsIntoSheets.gs */
+// READ THIS Before TESTING https://developers.google.com/apps-script/migration/oauth-config
+// Function to pull in your tweets from Twitter and puts them in a spreadsheet
+
+var fields = {'in_reply_to_screen_name':true,'created_at':true,'text':true};
+
+/**
+ * Function to fetch your tweets and save them.
+ */
+function saveYourTweets_() {
+  // Setup OAuthServiceConfig
+  var oAuthConfig = UrlFetchApp.addOAuthService("twitter");
+  oAuthConfig.setAccessTokenUrl("https://api.twitter.com/oauth/access_token");
+  oAuthConfig.setRequestTokenUrl("https://api.twitter.com/oauth/request_token");
+  oAuthConfig.setAuthorizationUrl("https://api.twitter.com/oauth/authorize");
+  
+  oAuthConfig.setConsumerKey(ScriptProperties.getProperty(CONSUMER_KEY));
+  oAuthConfig.setConsumerSecret(ScriptProperties.getProperty(CONSUMER_SECRET));
+  
+  // Setup optional parameters to point request at OAuthConfigService.  The "twitter"
+  // value matches the argument to "addOAuthService" above.
+  var options =
+      {
+        "oAuthServiceName" : "twitter",
+        "oAuthUseToken" : "always"
+      };
+  
+  var result = UrlFetchApp.fetch("https://api.twitter.com/1.1/statuses/user_timeline.json",
+                                 options);
+  var o  = Utilities.jsonParse(result.getContentText());
+  
+  var ss = SpreadsheetApp.getActive();
+  var sheet = ss.getSheetByName(TweetedMessagesSheet);
+  
+  // var doc = SpreadsheetApp.getActiveSpreadsheet();
+  
+  var cell = sheet.getRange('a1');
+  var index = 0;
+  for (var i in o) {
+    var row = o[i];
+    var col = 0;
+    for (var j in row) {
+      if (fields[j]) {
+        cell.offset(index, col).setValue(row[j]);
+        col++;
+      }
+    }
+    index++;
+  }
+}
+
+/**
+ * Function to pull your tweets from the user's time line
+ */
+function pullYourTweets() {
+  var service = getTwitterService_();
+  if (service.hasAccess()) {
+    var url = 'https://api.twitter.com/1.1/statuses/user_timeline.json';
+    var response = service.fetch(url);
+    var tweets = JSON.parse(response.getContentText());
+    recordInSheet_(tweets);
+    for (var i = 0; i < tweets.length; i++) {
+      Logger.log(tweets[i].text);
+    }
+  } else {
+    var authorizationUrl = service.authorize();
+    Logger.log('Please visit the following URL and then re-run the script: ' + authorizationUrl);
+  }
+}
+
+/**
+ * Function written to test whether the rest of these things work!
+ * @returns {[[Type]]} [[Description]]
+ */
+function TOTESTgetTwitterService_() {
+  var projectKey = getScriptProjectKey();
+  var service = OAuth1.createService('twitter');
+  service.setAccessTokenUrl('https://api.twitter.com/oauth/access_token')
+  service.setRequestTokenUrl('https://api.twitter.com/oauth/request_token')
+  service.setAuthorizationUrl('https://api.twitter.com/oauth/authorize')
+  service.setConsumerKey(CONSUMER_KEY);
+  service.setConsumerSecret(CONSUMER_SECRET);
+  service.setProjectKey(projectKey);
+  service.setCallbackFunction('TOTESTauthCallback_');
+  service.setPropertyStore(PropertiesService.getScriptProperties());
+  return service;
+}
+
+/**
+ * Function written to test whether the rest of these things work!
+ * @param   {[[Type]]} request [[Description]]
+ * @returns {[[Type]]} [[Description]]
+ */
+function TOTESTauthCallback_(request) {
+  var service = getTwitterService();
+  var isAuthorized = service.handleCallback(request);
+  if (isAuthorized) {
+    return HtmlService.createHtmlOutput('Success! You can close this page.');
+  } else {
+    return HtmlService.createHtmlOutput('Denied. You can close this page');
+  }
+}
+
+/**
+ * Function to record the tweets into spreadsheet
+ * @param {String} tweetMsg the tweets pulled 
+ *                          from user's time line
+ */
+function recordInSheet_(tweetMsg) {  
+  var ss = SpreadsheetApp.getActive();
+  var sheet = ss.getSheetByName(TweetedMessagesSheet); 
+  var lastRow = sheet.getLastRow();
+  var cell = sheet.getRange(lastRow + 1, 1);
+  var index = 0;
+  for (var i = 0; i < tweetMsg.length; i++) {
+    var row = tweetMsg[i];
+    var col = 0;
+    for (var j in row) {
+      if (fields[j]) {
+        cell.offset(index, col).setValue(row[j]);
+        col++;
+      }
+    }
+    index++;
+  }
+}
+
+/** From makeSheetCopy.gs */
+/**
+ * Function to copy rows from present Messages for Tweeting sheet
+ * into a new sheet.
+ */
+function makeSpreadSheetCopy_() {
+  //get the data from current Spreadsheet
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var msgsSheet = ss.getSheetByName(MessagesForTweetingSheet);
+  var lastRow = msgsSheet.getLastRow();
+  var lastColumn = msgsSheet.getLastColumn();
+  var dataRange = msgsSheet.getRange(1, 1, lastRow, lastColumn);
+  var myData = dataRange.getValues();
+
+
+  var params = createNewSpreadSheet_();
+  var newSS =  params.fileHandle;
+  var newMsgsSheet = newSS.getActiveSheet();
+  newMsgsSheet.setName('Old '+ MessagesForTweetingSheet);
+  newMsgsSheet.getRange(1, 1, lastRow, lastColumn).setValues(myData);
+  setStatusInfoForUser_('OK', 'Your old Tweet messages copied to file: ' + params.fileName, 'OK');
+}
+
+/**
+ * Function to move old tweet messages from the Messages for Tweeting sheet
+ * to a new spreadsheet
+ */
+function moveOldTweetsToNewSpreadSheet_() {
+  //get the data from current Spreadsheet
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var msgsSheet = ss.getSheetByName(MessagesForTweetingSheet);
+  var lastRow = msgsSheet.getLastRow();
+  var lastColumn = msgsSheet.getLastColumn();
+  var dataRange = msgsSheet.getRange(1, 1, lastRow, lastColumn);
+  var myData = dataRange.getValues();
+
+  var params = createNewSpreadSheet_();
+  var newSS =  params.fileHandle;
+  var newMsgsSheet = newSS.getActiveSheet();
+  newMsgsSheet.setName('Old '+ MessagesForTweetingSheet);
+  newMsgsSheet.getRange(1, 1, lastRow, lastColumn).setValues(myData);
+  setStatusInfoForUser_('OK', 'Your old Tweet messages moved to file: ' + params.fileName, 'OK');
+
+  clearOutRows(); 
+}
+
+/**
+ * Function to create new spreadsheet. The file name given will have 
+ * ScripTweet-OldTweetsOn followed by string representing date and time.
+ * @returns {Object} new file name and file handle itself are returned as
+ *                   a object containing fileName and fileHandle
+ */
+function createNewSpreadSheet_() {
+  // Create new Spreadsheet
+  var newFileName = 'ScripTweet-OldTweetsOn'+ getDate_();
+  var newSS =  SpreadsheetApp.create(newFileName);
+  setStatusInfoForUser_('OK', 'New File ' + newFileName +' Created.', 'OK');
+  return { fileName : newFileName,
+           fileHandle : newSS
+         };
+}
+
+/**
+ * Function to get Date & Time
+ * @returns {String} which represents date and time - useful for keeping
+ *                   track of when the file was created etc.
+ */
+function getDate_() {
+  var d = new Date();
+  var dateofDay = new Date(d.getTime());
+  return Utilities.formatDate(dateofDay, localTimeZone, dateFormatForFileNameString);
+}
+
+/** From mediaHandling.gs */
+// Get file by name in the user's Drive
+function getMyFileByName_(fileName) {
+  var files = DriveApp.getFilesByName(fileName);
+  if (!files)
+    return null;
+  Logger.log("Looking for files by name %s", fileName);
+  while (files.hasNext()) {
+    var file = files.next();
+    Logger.log("We got file name %s", file.getName());
+    if (file.getName() == fileName) {
+      // Logger.log("Found the file and the ID is " + file.getId());
+      return file;
+    }
+  }
+}
+
+/**
+* Upload a single image to Twitter and retrieve the media ID for later use in 
+* sendTweet() (using the media_id_string params)
+*
+* @param {Blob} imageblob the Blob object representing the image data to upload
+* @return {object} the Twitter response as an object if successful, null otherwise
+*/
+function uploadMedia_(imageblob) {
+  var twitterService = getTwitterService_();
+  if (!twitterService.hasAccess()) {
+    return twitterService.authorize();
+  }
+  var url = "https://upload.twitter.com/1.1/media/upload.json";
+  var old_location = twitterService.paramLocation_;
+  
+  var options = {
+    method: "POST",
+    payload: { "media" : imageblob }
+  };
+  
+  twitterService.paramLocation_ = "uri-query";
+  try {
+    var result = twitterService.fetch(url, options);
+    Logger.log("Upload media success. Response was:\n" + result);
+    return JSON.parse(result.getContentText("UTF-8"));
+  }  
+  catch (e) {
+    options.payload = options.payload && options.payload.length > 100 ? "<truncated>" : options.payload;
+    Logger.log("Upload media failed. Error was:\n" + JSON.stringify(e) 
+                     + "\n\noptions were:\n" + JSON.stringify(options) + "\n\n");
+    return e;  // Changed from null to e so we can report the error messages returned.
+  } finally {
+    twitterService.paramLocation_ = old_location;
+  }
+}
+
+/**
+* Function to handle media if specified cell contains file name and it accessible
+* Twitter API allows for upto 4 images.
+* @param {Blob} imageblob the Blob object representing the image data to upload
+* @return {object} the Twitter Media IDs as an object if successful, null otherwise
+*/
+function handleMedia_(sheet, rowIndex, dataValues) {
+  var data = sheet.getDataRange().getValues();
+  var headers = data[1];
+  var colImageFileName = getColumnIndex_(sheet, headers, "Image File Name");
+  var TwitterMediaIndex = getColumnIndex_(sheet, headers, "Twitter Media IDs");
+  var params = "";
+  // Handle any media to add to the post.
+  if (sheet.getRange(rowIndex+1, colImageFileName+1).getValue()) {
+    Logger.log("Got Media ID to handle");
+    var mediaIds = dataValues[rowIndex][colImageFileName].split('\n');
+    if (mediaIds.length > 4) {
+      throw "Error: Up to 4 images can be uploaded to one tweet.";
+    }
+    var twitterMediaIds = [];
+    mediaIds.forEach(function(fileName) {
+      var media = getMyFileByName_(fileName);
+      if (media) {
+        if (media.getSize() > 3145728) {
+          throw "Error: Image size over 3MB. Size: " + media.getSize();
+        }
+        var mediaResponse = uploadMedia_(media.getBlob());
+        // If an error occurred throw an exception with the message returned from the upload.
+        if (mediaResponse.hasOwnProperty("message")) {
+          throw "Error uploading Image: " + mediaResponse.message;
+        }
+        twitterMediaIds.push(mediaResponse.media_id_string);
+      } else {
+        throw "Error: Invalid Media ID {" + fileName + "}";
+      }
+    });
+    // Setup media_ids to be used in Status Update call
+    params = { media_ids: twitterMediaIds.join(",") };
+    Logger.log("Saving Media IDs in sheet");
+    // Save Twitter Media IDs in sheet for reference
+    sheet.getRange(rowIndex+1, TwitterMediaIndex+1).setValue(twitterMediaIds.join("\n"));
+  }
+  return params;
+}
+
+function tweetTweet_(tweet, params) {
+  Logger.log("Going to tweet: <%s>", tweet);
+
+  var twitterService = getTwitterService_();
+  if (!twitterService.hasAccess()) {
+    return twitterService.authorize();
+  }
+  var payload = {
+    "status" : tweet
+  };
+
+  if (params) {
+    for(var i in params) {
+      if(params.hasOwnProperty(i)) {
+        payload[i.toString()] = params[i];   
+      }
+    }
+  }
+
+  var options = {
+    method: "POST",
+    payload: payload,
+    muteHttpExceptions : true
+  };
+  
+  var statusUrl = "https://api.twitter.com/1.1/statuses/update.json";
+  
+  try {    
+    var result = twitterService.fetch(statusUrl, options);
+    Logger.log("Send tweet success. Response was: " + result.getContentText("UTF-8")); 
+    return JSON.parse(result.getContentText("UTF-8"));
+  } catch (e) {
+    Logger.log("Send tweet failure. Error was:\n" + JSON.stringify(e) + "options were:\n" + JSON.stringify(options));
+    throw e;  // Changed from null to e so we can check the error messages returned.
+  }
+}
+
+/*  For testing.
+* Use Vivek'sJustAMinuteThumbnail.gif as file name
+function getMyFile() {
+ var fileName;
+ var msg;
+ // Display a dialog box with a title, message, input field, and "Yes" and "No" buttons. The
+ // user can also close the dialog by clicking the close button in its title bar.
+ var ui = SpreadsheetApp.getUi();
+ var response = ui.prompt('File Name Please', 'File Name Please:', ui.ButtonSet.YES_NO);
+
+ // Process the user's response.
+ if (response.getSelectedButton() == ui.Button.YES) {
+   Logger.log('File Name entered is %s.', response.getResponseText());
+   fileName = response.getResponseText();
+ } else if (response.getSelectedButton() == ui.Button.NO) {
+   Logger.log('The user didn\'t want to provide a file name.');
+ } else {
+   Logger.log('The user clicked the close button in the dialog\'s title bar.');
+ }
+ 
+ Logger.log("Going to look for the file %s", fileName);
+ var file = getMyFileByName_(fileName);
+ msg = "File Name: " + fileName + " and ID is :<" + file.getId() + ">";
+ Logger.log(msg);
+ ui.alert( msg);
+}
+*/
+
+/** From putButtonsInCells.gs */
+/**
+* From http://googlesheetshelp.blogspot.fr/2014/11/method-for-displaying-images-stored-on.html
+* 1. Make Google Drive Folder Public
+* 2. Change the Sharing options so that it is viewable by anyone with the link on the internet without logging in
+* 3. Right click on the required file and 'Get Link for Sharing'
+* 4. Copy the link to clipboard
+* 5. Here's an example url
+*    https://drive.google.com/open?id=0B9biAW_mGiSpQ1ZjWTNxLTE2RDQ&authuser=0
+* 6. Modify it to look like:
+*    http://drive.google.com/uc?export=view&id=0B9biAW_mGiSpQ1ZjWTNxLTE2RDQ
+* 7. What follows the '?id=' is what is required as suffix
+* 8. The prefix is "http://drive.google.com/uc?export=view&id="
+* 9. Combine the prefix and suffix to get the URL
+* 10. Use the URL
+*
+* But "Serge insas"  who is a Google Apps Script Top Contributor says:
+* (http://stackoverflow.com/questions/26801041/what-is-the-right-way-to-put-a-drive-image-into-a-sheets-cell-programmatically)
+* var img = DriveApp.getFileById('image ID'); // or any other way to get the image object
+* // in this example the image is in column E
+* var imageInsert = sheet.getRange(lastRow+1, 5)
+*            .setFormula('=image("https://drive.google.com/uc?export=view&id='+img.getId()+'")');
+*            
+*  // define a row height to determine the size of the image in the cell
+*  sheet.setRowHeight(lastRow+1, 80);
+*/
+  // https://drive.google.com/open?id=0B7YVNdei_3c-SG9pZmx1dy1lMTA
+  // http://drive.google.com/uc?export=view&id=
+
+var UrlPrefix = "http://drive.google.com/uc?export=view&id="
+var button1UrlSuffix = "0B7YVNdei_3c-SG9pZmx1dy1lMTA";
+var button2UrlSuffix = "0B7YVNdei_3c-Mms3UkhXaUU2dzA";
+
+function putButtonsInCells() {
+  
+  
+}
